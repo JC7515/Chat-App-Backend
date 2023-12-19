@@ -1,0 +1,11 @@
+TIPOS DE ERRORES Y COMO PROCEDER CON ELLOS:
+
+error_type_1: Error de eliminación de archivo de respaldo descargado, se debe proceder a eliminar todos los archivos que tengan relacionados este tipo de error, de la carpeta backupFilesForS3Transactions del proyecto o api.
+
+error_type_2: Error de archivos de respaldo no subidos con exito al bucket de s3 en el rollback, se debe proceder subiendo esos archivos de respaldo registrados con este tipo de error al bucket de s3 en aws, luego borrarlos de la carpeta  backupFilesForS3Transactions manualmente, para asi mantener la integridad de los datos.
+
+error_type_3: Error de eliminación de archivo recientemente descargado en el bucket de aws s3, se debe proceder a eliminar todos los archivos relacionados a este tipos de erro, de el bucket de aws s3, para asi mantener la integridad de los datos.
+
+error_type_4: Error de eliminacion de archivo en el bucket de aws s3, se debe proceder a eliminar de forma inmediata los archivos que no se pudieron eliminar en la operacion con el bucket de aws s3.
+
+error_type_5: Error de subida de archivo al bucket de aws s3, se debe proceder subiendo de forma inmediata los archivos de respaldo guardados en la carpeta backupFilesForS3Transactions a el bucket de aws s3.

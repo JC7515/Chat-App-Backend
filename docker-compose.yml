@@ -1,0 +1,247 @@
+version: '2'
+
+services:
+
+   backend-1: 
+    container_name: backend-1
+    # build: .  no utilizo build porque creara 3 versiones de mi imagen dockerfile iguales solo que con diferente nombre 
+    image: moviezone-app:1.0
+    # ports: 
+    #  - 4600:4400
+    # environment: 
+    #     SEQ_DB: postgres
+    #     SEQ_USER: postgres
+    #     SEQ_PW: root123
+    #     PORT: 5200
+    #     DATABASE_URL: ${DATABASE_URL}
+    # volumes:
+    #   - ./src/host:/etc/host
+    command: 'npm run dev-start'
+    # depends_on:
+      # - db
+      # - redis-master
+      # - redis-slave
+      # - redis
+      # - redis-master-1
+      # - redis-master-2
+      # - redis-master-3
+      # - redis-master-4
+    networks:
+      - general-network 
+
+   backend-2: 
+    container_name: backend-2
+    # build: .
+    image: moviezone-app:1.0
+    # ports: 
+    #  - 4700:4400
+    # environment: 
+    #     SEQ_DB: postgres
+    #     SEQ_USER: postgres
+    #     SEQ_PW: root123
+    #     PORT: 5200
+    #     DATABASE_URL: ${DATABASE_URL}
+    # volumes:
+    #   - ./src/host:/etc/host
+    command: 'npm run dev-start'
+    # depends_on:
+      # - db
+      # - redis-master
+      # - redis-slave
+      # - redis
+      # - redis-master-1
+      # - redis-master-2
+      # - redis-master-3
+      # - redis-master-4
+    networks:
+    - general-network
+
+   nginx:
+    container_name: server-nginx
+    image: nginx
+    ports: 
+     - 4100:443
+    volumes:
+     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+     - ./nginx/snippets/cors_config.conf:/etc/nginx/snippets/cors_config.conf
+     - ./nginx/snippets/cors-sites.conf:/etc/nginx/snippets/cors-sites.conf
+     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+     - /etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/fullchain.pem:/etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/fullchain.pem
+     - /etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/privkey.pem:/etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/privkey.pem
+    depends_on:
+     - backend-1
+     - backend-2
+     # - backend3
+     # - backend4
+     # - backend5
+     # - backend6
+     # - backend7
+     # - backend8
+     # - backend9
+     # - backend10
+    networks:
+     - general-network
+
+
+  #  backend3: 
+    # container_name: backend-3
+    # build: .
+    # image: moviezone-app:1.0
+    # ports: 
+    #  - 4800:4400
+    # environment: 
+    #     SEQ_DB: postgres
+    #     SEQ_USER: postgres
+    #     SEQ_PW: root123
+    #     PORT: 5200
+    #     DATABASE_URL: ${DATABASE_URL}
+    # volumes:
+    #   - ./src/host:/etc/host
+    # command: 'npm run dev-start'
+    # depends_on:
+      # - db 
+      # - redis-master
+      # - redis-slave
+      # - redis
+      # - redis-master-1
+      # - redis-master-2
+      # - redis-master-3
+      # - redis-master-4
+ 
+  #  backend4: 
+    # container_name: backend-4
+    # image: moviezone-app:1.0
+    # command: 'npm run dev-start'
+    # depends_on:
+      # - db
+      # - redis-master
+      # - redis-slave
+      # - redis
+      # - redis-master-1
+      # - redis-master-2
+      # - redis-master-3
+      # - redis-master-4
+
+  #  backend5: 
+  #   container_name: backend-5
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+  #  backend6: 
+  #   container_name: backend-6
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+  #  backend7: 
+  #   container_name: backend-7
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+  #  backend8: 
+  #   container_name: backend-8
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+  #  backend9: 
+  #   container_name: backend-9
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+  #  backend10: 
+  #   container_name: backend-10
+  #   image: server-todoapp:1.0
+  #   command: 'npm start'
+  #   depends_on:
+  #     - db
+
+
+  #  db:
+  #    container_name: 'db'
+  #    image: postgres
+  #    ports:
+  #    - "5432:5432"
+  #    environment:
+  #      POSTGRES_USER: postgres
+  #      POSTGRES_PASSWORD: admin1234
+  #    volumes:
+  #     - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #     - ./databaseBackups/backup_entertainmentappdb_4:/databaseBackups/backup_entertainmentappdb_4
+  #   #  command: 'pg_restore -U postgres  -d  entertainmentappdb ./databaseBackups/backup_entertainmentappdb_1'
+
+  #  redis:
+  #    container_name: 'redis'
+  #    image: redis
+  #    ports:
+  #    - "6379:6379"
+    #  volumes:
+      # - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  #  redis-master:
+  #   image: 'bitnami/redis:latest'
+  #   ports:
+  #     - "6379"
+  #   environment:
+  #     - REDIS_REPLICATION_MODE=master
+  #     # - REDIS_PASSWORD=master_password123
+  #     - ALLOW_EMPTY_PASSWORD=yes
+
+  #  redis-slave:
+  #   image: 'bitnami/redis:latest'
+  #   ports:
+  #     - "6379"
+  #   depends_on:
+  #     - redis-master
+  #   environment:
+  #     - REDIS_REPLICATION_MODE=slave
+  #     - REDIS_MASTER_HOST=redis-master
+  #     - REDIS_MASTER_PORT_NUMBER=6379
+  #     # - REDIS_MASTER_PASSWORD=master_password123
+  #     # - REDIS_PASSWORD=slave_password123
+  #     - ALLOW_EMPTY_PASSWORD=yes
+
+  #  redis-node1:
+  #    container_name: 'redis-node1'
+  #    image: redis
+  #    ports:
+  #    - "6379:6379"
+  #   #  volumes:
+  #     # - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  #  redis-node2:
+  #    container_name: 'redis-node2'
+  #    image: redis
+  #    ports:
+  #    - "6380:6379"
+  #   #  volumes:
+  #     # - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+      
+  #  redis-node3:
+  #    container_name: 'redis-node3'
+  #    image: redis
+  #    ports:
+  #    - "6381:6379"
+  #   #  volumes:
+  #     # - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  #  redis-node4:
+  #    container_name: 'redis-node4'
+  #    image: redis
+  #    ports:
+  #    - "6382:6379"
+  #   #  volumes:
+  #     # - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+networks:
+  general-network:
+    external: true
+    driver: bridge

@@ -1,0 +1,22 @@
+En el contexto de las solicitudes HTTP, existen varios tipos de estados (también conocidos como códigos de estado o HTTP status codes) que indican el resultado de una solicitud. Estos estados se utilizan para comunicar información sobre el resultado de la solicitud entre el cliente (por ejemplo, un navegador web) y el servidor. A continuación, se presentan algunos ejemplos de los tipos de estados más comunes y sus contextos de uso:
+
+1. 2xx - Éxito: Los códigos de estado en el rango 2xx indican que la solicitud se ha procesado con éxito. Algunos ejemplos son:
+   - 200 OK: Indica que la solicitud fue exitosa.
+   - 201 Created: Indica que se ha creado un nuevo recurso como resultado de la solicitud.
+   - 204 No Content: Indica que la solicitud se ha procesado correctamente, pero no hay contenido para devolver.
+
+2. 3xx - Redireccionamiento: Los códigos de estado en el rango 3xx indican que se requiere alguna acción adicional para completar la solicitud. Algunos ejemplos son:
+   - 301 Moved Permanently: Indica que el recurso solicitado ha sido permanentemente movido a una nueva ubicación.
+   - 302 Found: Indica que el recurso solicitado ha sido temporalmente movido a una nueva ubicación.
+   - 304 Not Modified: Indica que el recurso no ha sido modificado desde la última vez que fue solicitado, por lo que se puede utilizar una copia en caché.
+
+3. 4xx - Errores del cliente: Los códigos de estado en el rango 4xx indican errores causados por el cliente. Algunos ejemplos son:
+   - 400 Bad Request: Indica que la solicitud es incorrecta o no se puede entender por el servidor.
+   - 401 Unauthorized: Indica que se requiere autenticación para acceder al recurso solicitado.
+   - 404 Not Found: Indica que el recurso solicitado no se encuentra en el servidor.
+
+4. 5xx - Errores del servidor: Los códigos de estado en el rango 5xx indican errores causados por el servidor. Algunos ejemplos son:
+   - 500 Internal Server Error: Indica que se produjo un error interno en el servidor al procesar la solicitud.
+   - 503 Service Unavailable: Indica que el servidor no está disponible temporalmente debido a mantenimiento o sobrecarga.
+
+Estos son solo algunos ejemplos de los tipos de estados más comunes, pero existen otros códigos de estado que se utilizan para diferentes situaciones. Los códigos de estado permiten que el cliente y el servidor se comuniquen entre sí y tomen las acciones adecuadas en función del resultado de la solicitud.
