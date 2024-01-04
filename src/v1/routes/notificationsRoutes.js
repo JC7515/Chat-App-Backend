@@ -99,17 +99,17 @@ router.get('/all/notifications', authenticate, authorize, async (req, res) => {
 
 router.post('/notifications', authenticate, authorize, async (req, res) => {
 
-    const { message_id, user_id, chat_id, type, message, status } = req.body
+    const { message_id, user_id, chat_id, group_id, type, message, status } = req.body
 
 
     // 1)
-    const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7)'
+    const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, group_id, type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
 
 
 
     try {
 
-        if (!message_id || !user_id || !chat_id || !type || !message || !status) {
+        if (!message_id || !user_id || !chat_id ||!group_id || !type || !message || !status) {
             throw { status: 400, message: `Please complete all required fields.` }
         }
 
@@ -119,7 +119,7 @@ router.post('/notifications', authenticate, authorize, async (req, res) => {
         // ************ Creacion de chat *************
 
 
-        const chatDataForRegister = [notification_id, message_id, user_id, chat_id, type, message, status]
+        const chatDataForRegister = [notification_id, message_id, user_id, chat_id, group_id, type, message, status]
 
         const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
 

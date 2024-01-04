@@ -1,6 +1,6 @@
 import express from "express";
 import connection from "../../connectionDb.cjs";
-import { GetTwoGroupInicials } from "../helpers/index.js";
+import { GetCurrentDateString, GetTwoGroupInicials } from "../helpers/index.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
 import { HashPassword } from "../utils/index.js";
@@ -151,8 +151,8 @@ router.post('/groups', authenticate, authorize, async (req, res) => {
         // ******* Declarar Participantes del chat **********
 
         const status = 'inactive'
-        const union_date = new Date()
-
+        const union_date = GetCurrentDateString()
+    
         const DataForChatParticipants = [chat_id, admin_id, status, union_date]
 
         const resultDeclaredChatParticipants = await connection.query(sqlForCreateChatParticipants, DataForChatParticipants)

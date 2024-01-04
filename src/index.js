@@ -1,16 +1,16 @@
+import { app } from './socketIo.js';
 import express from 'express';
+import { server } from './socketIo.js';
+import { SERVER_PORT } from './configEnv.js'
+import fileUpload from 'express-fileupload'
 import compression from 'compression'
 import cors from 'cors'
 import responseTime  from 'response-time'
-import fileUpload from 'express-fileupload'
 import morgan from 'morgan'
-import { SERVER_PORT } from './configEnv.js'
-import { server } from './socketIo.js';
-import { app } from './socketIo.js';
 // const app = express()
+import profile from './v1/routes/profileRoutes.js'
 import signUp from './v1/routes/signUpRoutes.js'
 import login from './v1/routes/loginRoutes.js'
-import profile from './v1/routes/profileRoutes.js'
 import groups from './v1/routes/groupsRoutes.js'
 import users from './v1/routes/usersRoutes.js'
 import members from './v1/routes/membersRoutes.js'
@@ -37,20 +37,18 @@ app.use(express.json({
 app.use(cors({
     origin: 'http://localhost:3000',
     // origin: '*',
-    methods: 'GET,POST,PUT,DELETE', 
-    allowedHeaders: 'Content-Type,Authorization'
+    methods: 'GET,PUT,POST,DELETE', 
+    allowedHeaders: 'Content-Type, Authorization'
 }))
 
 
-app.use(fileUpload({useTempFiles: true ,tempFileDir: './uploads'}))
+app.use(fileUpload({useTempFiles: true, tempFileDir: './uploads'}))
 
 
 
-
-
-app.use('/v1',login)
-app.use('/v1', signUp)
+app.use('/v1', login)
 app.use('/v1', profile)
+app.use('/v1', signUp)
 app.use('/v1', groups)
 app.use('/v1', users)
 app.use('/v1', members)

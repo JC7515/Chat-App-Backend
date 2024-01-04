@@ -1,5 +1,6 @@
 import express from "express";
 import connection from "../../connectionDb.cjs";
+import { GetFileUrl } from "../../s3.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
 
@@ -21,7 +22,7 @@ router.get('/messages', authenticate, authorize, async (req, res) => {
 
 
         console.log(chatId, messagesLimit, creationDate)        
-        if( !chatId, !messagesLimit, !creationDate ){
+        if( !chatId || !messagesLimit || !creationDate ){
             throw { status: 404, message: `the user has not selected any chat.` }
         }
 
@@ -52,14 +53,16 @@ router.get('/messages', authenticate, authorize, async (req, res) => {
     
                     const userData =  await connection.query(sql, userDataForSql)
     
-    
                     const userDataObtained = userData.rows[0]
+
+                    const profilePictureUrl = await GetFileUrl(userDataObtained.profile_picture, 88000)
     
                     return {
                         ...message,
                         user_data: {
                             user_id: userDataObtained.user_id,
                             username: userDataObtained.username,
+                            profile_picture: profilePictureUrl
                         } 
                     }
     

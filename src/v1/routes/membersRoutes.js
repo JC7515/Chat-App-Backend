@@ -1,5 +1,6 @@
 import express from "express";
 import connection from "../../connectionDb.cjs";
+import { GetFileUrl } from "../../s3.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
 import { ComparatePassword } from "../utils/index.js";
@@ -42,7 +43,7 @@ router.get('/members', authenticate, authorize, async (req, res) => {
         const membersListOfGroup = await Promise.all(
             membersList.map(async (member, index) => {
 
-                const sql = 'SELECT socket_id,user_id, username, name  FROM users WHERE user_id = $1'
+                const sql = 'SELECT socket_id,user_id, username, name, profile_picture FROM users WHERE user_id = $1'
 
                 const userDataForSql = [member.user_id]
 
@@ -51,7 +52,16 @@ router.get('/members', authenticate, authorize, async (req, res) => {
 
                 const userDataObtained = resultOfGetUserData.rows[0]
 
-                console.log(userDataObtained)
+                // aqui obtenemos la url de la imagen de perfil del miembro
+                const profilePictureUrl = await GetFileUrl(userDataObtained.profile_picture, 88000)
+
+                // aqui asignamos la url de la imagen de perfil a la propiedad profile_picture
+                const userDataModified = {
+                    ...userDataObtained,
+                    profile_picture: profilePictureUrl
+                }
+
+                console.log(userDataModified)
                 
                 if(member.role === 'admin'){
                     
@@ -65,7 +75,7 @@ router.get('/members', authenticate, authorize, async (req, res) => {
 
                     return {
                         group_id: member.group_id,
-                        user: userDataObtained,
+                        user: userDataModified,
                         invitation_id: invitationIdValue,
                         role: member.role,
                     }
@@ -73,7 +83,7 @@ router.get('/members', authenticate, authorize, async (req, res) => {
                 
                 return {
                     group_id: member.group_id,
-                    user: userDataObtained,
+                    user: userDataModified,
                     role: member.role,
                 }
 
@@ -235,7 +245,7 @@ router.post('/members', authenticate, authorize, async (req, res) => {
 
 
 
-
+// esta logica sirve para cambiar el role de un miembro de grupo 
 // /members/?userId=${userId}&groupId=${groupId}&role=${role}
 router.put('/members', authenticate, authorize, async (req, res) => {
 
@@ -283,33 +293,50 @@ router.put('/members', authenticate, authorize, async (req, res) => {
 )
 
 
-// /members/?userId=${userId}&groupId=${groupId}
+// /members/?userId=${userId}&groupId=${groupId}&chatId=${chatId}
 router.delete('/members', authenticate, authorize, async (req, res) => {
 
-    const { userId, groupId } = req.query
+    const { userId, groupId, chatId } = req.query
 
     // console.log(invitation_id)
 
     // 1)
     const sqlForDeleteMember = 'DELETE FROM group_members WHERE user_id = $1 AND group_id = $2'
+    
+    // 2)
+    const sqlForDeleteParticipant = 'DELETE FROM chat_participants WHERE user_id = $1 AND chat_id = $2'
 
     try {
 
-        if (!userId || !groupId) {
+        if (!userId || !groupId || !chatId) {
             throw { status: 400, message: `please fill in the missing fields` }
         }
 
 
         // 1)*******************************************
-        // *********** Aqui actualizamos el role del miembro de grupo a adm ************
+        // *********** Aqui eliminamos al miembro del grupo ************
 
 
-        const dataForDeleteMember = [role, userId, groupId]
+        const dataForDeleteMember = [userId, groupId]
 
         const resultOfDeleteMember = await connection.query(sqlForDeleteMember, dataForDeleteMember)
 
 
         if (resultOfDeleteMember.rowCount === 0) {
+            console.log('la propiedad rowCount indica que el miembro no se elimino con exito DELETE /members')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+        // 2)*******************************************
+        // *********** Aqui eliminamos al miembro del grupo ************
+
+
+        const dataForDeleteParticipant = [userId, chatId]
+
+        const resultOfDeleteParticipant = await connection.query(sqlForDeleteParticipant, dataForDeleteParticipant)
+
+
+        if (resultOfDeleteParticipant.rowCount === 0) {
             console.log('la propiedad rowCount indica que el miembro no se elimino con exito DELETE /members')
             throw { status: 500, message: `An error occurred, try again` }
         }

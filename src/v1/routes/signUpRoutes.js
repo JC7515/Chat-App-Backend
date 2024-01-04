@@ -33,7 +33,7 @@ router.post('/signUp', async (req, res) => {
 
         const encryptedPassword = await HashPassword(password)
 
-        const userDataForRegister = [user_id, username, encryptedPassword, name, biography, birth_day, phone, email, 'image-basic-avatar-profile.png', create_at]
+        const userDataForRegister = [user_id, username, encryptedPassword, name, biography, birth_day, phone, email, 'image-default-avatar-profile-1.png', create_at]
 
         console.log(userDataForRegister)
 

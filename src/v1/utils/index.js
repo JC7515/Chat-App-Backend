@@ -6,6 +6,7 @@ import { CreateSessionOutputFilterSensitiveLog } from '@aws-sdk/client-s3'
 import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from '../const/index.js'
 import connection from '../../connectionDb.cjs'
 import { v4 as uuidv4 } from 'uuid'
+import path from 'path'
 
 const SECRETKEY = SECRET_KEY_JWT
 
@@ -93,8 +94,46 @@ export const GenerateTokenToValidateUserMail = (userId) => {
 
 
 
+export const GenerateNewFileNameOfProfile = (newFileName, originalFileName) => {
+    const CreateNewFileName = `${newFileName}${path.extname(originalFileName)}`
 
-export const ChangeNameOfProfileImage = async (originalRouteofImage, newRouteOfImage) => {
+    return CreateNewFileName
+}
+
+
+export const GenerateSqlToUpdateProfileData = (frontData, dbFields) => {
+
+    const dinamicStringData = []
+
+    // aqui estamos filtrando el array de datos que nos llega del front, validando solo los datos que no sean undefined y agregando al arr dinamicStringData el string con el numbre del field a actualizar en la base de datos y su indice de posicion      
+    let currentIndex = 0
+
+    frontData.forEach((field,index) => {
+        if (field) {
+            currentIndex = currentIndex + 1
+            dinamicStringData.push(`${dbFields[index]} = $${currentIndex}`)
+        }
+    })
+
+
+    // aqui filtramos y obtenemos solo los fields que van a ser modificados en la base de datos 
+    const fieldsToUpdate = dinamicStringData.filter((field, index) => index !== dinamicStringData.length - 1)
+
+    // aqui estamos obteniendo la ultima posicion del array dinamicStringData para obtener el field de filtrado para la consulta, en este caso siempre sera por user_id 
+    const lastIndex = dinamicStringData.length - 1
+
+    // aqui creamos la consulta dinamica para luego devolverla
+    let dinamicSqlToReturn = `UPDATE users SET ${fieldsToUpdate.join(', ')} WHERE ${dinamicStringData[lastIndex]}`
+
+    let dinamicSql = dinamicSqlToReturn.replace(/`/g, "'")
+    dinamicSqlToReturn = dinamicSql
+
+    return dinamicSqlToReturn
+
+}
+
+
+export const ChangeNameOfImageFile = async (originalRouteofImage, newRouteOfImage) => {
     // originalurlofImage : aqui necesitas poner la ruta origina de tu archivo. en donde tambien estar su nombre actual
     // newUrlOfImage: y aqui la nueva ruta que tiene que ser la misma que la original, pero con el nuevo nombre que desea ponerle al archivo, recuerda que este proceso no afecta la resolucion de la imagen
     try {
@@ -108,7 +147,6 @@ export const ChangeNameOfProfileImage = async (originalRouteofImage, newRouteOfI
     } catch {
         throw { status: 500, message: err }
     }
-
 }
 
 
@@ -251,7 +289,7 @@ export const CreateANewMessage = async (message) => {
 }
 
 
-export const CreateNewNotification = async (message_id, participant_id, chat_id, group_id, type, message, status) => {
+export const CreateNewNotification = async (notification) => {
 
     try {
 
@@ -272,7 +310,7 @@ export const CreateNewNotification = async (message_id, participant_id, chat_id,
         // )
 
 
-        if (!message_id || !participant_id || !chat_id || !group_id || !type || !message || !status) {
+        if (!notification.message_id || !notification.participant_id || !notification.chat_id || !notification.group_id || !notification.type || !notification.message || !notification.status) {
             throw { status: 400, message: `Please complete all required fields.` }
         }
 
@@ -296,12 +334,12 @@ export const CreateNewNotification = async (message_id, participant_id, chat_id,
         // ************ Creacion de chat *************
         const notification_id = uuidv4()
 
-        const chatDataForRegister = [notification_id, message_id, participant_id, chat_id, group_id, type, message, status]
+        const chatDataForRegister = [notification_id, notification.message_id, notification.participant_id, notification.chat_id, notification.group_id, notification.type, notification.message, notification.status]
 
         const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
 
 
-        if(resultNotificationCreation.rowCount === 0) {
+        if (resultNotificationCreation.rowCount === 0) {
             console.log('la propiedad rowCount indica que la notificacion no se creo con exito')
             throw { status: 500, message: `An error occurred, try again` }
         }
@@ -309,7 +347,7 @@ export const CreateNewNotification = async (message_id, participant_id, chat_id,
         // 3)
         // ************ Obtener todas las notificaciones del usurario *************
 
-        const dataForGetNotifications = [participant_id]
+        const dataForGetNotifications = [notification.participant_id]
 
         const resultOfGetUserNotifications = await connection.query(sqlForGetUserNotifications, dataForGetNotifications)
 
