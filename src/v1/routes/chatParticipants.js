@@ -12,10 +12,20 @@ router.get('/contact/chatParticipant', authenticate, authorize, async (req, res)
     const { userId } = req.user
     const { chat_id } = req.query
 
+    
+    const sqlForGetChatData = 'SELECT * FROM chats WHERE chat_id = $1'
+    
+    
+    
+    // 2)
+    const sqlForGetChatParticipants = 'SELECT * FROM chat_participants WHERE chat_id = $1'
+    
+    
     try {
 
-        const sqlForGetChatData = 'SELECT * FROM chats WHERE chat_id = $1'
-
+        
+        // 1)
+        /* ******** aqui obtenemos la data del chat **** */
         const chatData = [chat_id]
 
 
@@ -25,9 +35,52 @@ router.get('/contact/chatParticipant', authenticate, authorize, async (req, res)
         const chatDataObtained = resultOfGetChat.rows
 
 
+        // 2)
+        /* ******** aqui obtenemos los ids de los participantes del chat ****** */
+
+
+        const resultOfGetChatParticipants = await connection.query(sqlForGetChatParticipants, chatData)
+
+
+        // aqui obtengo la lista de los ids de los participantes del chat
+        const chatParticipantsDataObtained = resultOfGetChatParticipants.rows
+
+
+        // 3)
+        /* ******** aqui obtenemos la data de los participantes del chat y la mapeamos para el cliente ****** */
+
+
+        const chatParticipantsDataList = await Promise.all(
+            chatParticipantsDataObtained.map(async (participant) => {
+
+                const sql = 'SELECT * FROM users WHERE user_id = $1'
+
+                const participantDataForSql = [participant.user_id]
+
+
+                const participantsData = await connection.query(sql, participantDataForSql)
+
+
+                const participantDataObtained = participantsData.rows[0]
+
+                return {
+                    user_id: participantDataObtained.user_id,
+                    status: participant.status,
+                    username: participantDataObtained.username,
+                    union_date: participant.union_date
+                }
+
+            })
+        )
+
+
+        console.log(chatParticipantsDataList)
+
         const data = {
-            chatData: chatDataObtained
+            chat_data: chatDataObtained,
+            chat_participants: chatParticipantsDataList
         }
+
 
         res.status(201).json({ status: "OK", data: data });
 
@@ -40,7 +93,7 @@ router.get('/contact/chatParticipant', authenticate, authorize, async (req, res)
 }
 )
 
-// /groups/contacts/?chat_id=${chatId}
+// GET /groups/contacts/?chat_id=${chatId}
 // aqui obtenemos los datos de un chat de tipo group
 router.get('/groups/chatParticipant', authenticate, authorize, async (req, res) => {
 
@@ -126,10 +179,11 @@ router.get('/groups/chatParticipant', authenticate, authorize, async (req, res) 
 
 
 
-// aqui actualizamos el status del participante del chat cuando ingresa o sale de un grupo
 
-//  /groups/chatParticipant/?chatId=${chatId}&participantId=${participantId}&newStatus=${newStatus}
-router.put('/groups/chatParticipant', authenticate, authorize, async (req, res) => {
+// aqui actualizamos el status del participante del chat cuando ingresa o sale de un chat de Contacto
+
+// PUT /contact/chatParticipant/?chatId=${chatId}&participantId=${participantId}&newStatus=${newStatus}
+router.put('/chatParticipant', authenticate, authorize, async (req, res) => {
 
     const { chatId, participantId, newStatus } = req.query
 
@@ -137,7 +191,7 @@ router.put('/groups/chatParticipant', authenticate, authorize, async (req, res) 
     const sqlForGetParticipantStatus = 'SELECT * FROM chat_participants WHERE status = $1 AND user_id = $2 '
 
     // 2)
-    const sqlForDesativeAllParticipantStatus = "UPDATE chat_participants SET status = $1 WHERE user_id = $2 AND chat_id = $3"
+    const sqlForDesactiveAllParticipantStatus = "UPDATE chat_participants SET status = $1 WHERE user_id = $2 AND chat_id = $3"
 
     // 3)
     const sqlForUpdateStatus = "UPDATE chat_participants SET status = $1 WHERE user_id = $2 AND chat_id = $3"
@@ -172,13 +226,13 @@ router.put('/groups/chatParticipant', authenticate, authorize, async (req, res) 
 
         if (listOfStatusObtained !== undefined && listOfStatusObtained.length > 0) {
 
-            
+
             const inactiveStatusValue = 'inactive'
 
             const participantDataForSql = [inactiveStatusValue, listOfStatusObtained[0].user_id, listOfStatusObtained[0].chat_id]
 
 
-            const resultOfDesactiveAllTheStatus = await connection.query(sqlForDesativeAllParticipantStatus, participantDataForSql)
+            const resultOfDesactiveAllTheStatus = await connection.query(sqlForDesactiveAllParticipantStatus, participantDataForSql)
 
 
             if (resultOfDesactiveAllTheStatus.rowCount === 0) {

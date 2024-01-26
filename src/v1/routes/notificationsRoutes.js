@@ -1,8 +1,8 @@
 import express from "express";
+import connection from "../../connectionDb.cjs";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
 import { v4 as uuidv4 } from 'uuid'
-import connection from "../../connectionDb.cjs";
 const router = express.Router()
 
 
@@ -10,6 +10,7 @@ const router = express.Router()
 router.get('/notifications', authenticate, authorize, async (req, res) => {
 
     const { userId } = req.user
+    
 
 
     // 1)
@@ -59,7 +60,7 @@ router.get('/all/notifications', authenticate, authorize, async (req, res) => {
 
 
     // 1)
-    const sqlForGetAllNotifications = 'SELECT * FROM notifications WHERE chat_id = $1'
+    const sqlForGetAllNotifications = 'SELECT * FROM notifications WHERE user_id = $1 AND chat_id = $1'
 
 
     try {
@@ -67,7 +68,7 @@ router.get('/all/notifications', authenticate, authorize, async (req, res) => {
         // 1)
         // ************ Creacion de chat *************
 
-        const chatData = [chat_id]
+        const chatData = [userId, chat_id]
 
         const resultOfGetAllNotifications = await connection.query(sqlForGetAllNotifications, chatData)
 
@@ -97,19 +98,19 @@ router.get('/all/notifications', authenticate, authorize, async (req, res) => {
 
 })
 
-router.post('/notifications', authenticate, authorize, async (req, res) => {
+router.post('/group/notifications', authenticate, authorize, async (req, res) => {
 
-    const { message_id, user_id, chat_id, group_id, type, message, status } = req.body
+    const { message_id, user_id, chat_id, group_id, type, chat_type, message, status } = req.body
 
 
     // 1)
-    const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, group_id, type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+    const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, group_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)'
 
 
 
     try {
 
-        if (!message_id || !user_id || !chat_id ||!group_id || !type || !message || !status) {
+        if (!message_id || !user_id || !chat_id ||!group_id || !type || !chat_type || !message || !status) {
             throw { status: 400, message: `Please complete all required fields.` }
         }
 
@@ -119,7 +120,7 @@ router.post('/notifications', authenticate, authorize, async (req, res) => {
         // ************ Creacion de chat *************
 
 
-        const chatDataForRegister = [notification_id, message_id, user_id, chat_id, group_id, type, message, status]
+        const chatDataForRegister = [notification_id, message_id, user_id, chat_id, group_id, type, chat_type, message, status]
 
         const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
 
@@ -145,6 +146,58 @@ router.post('/notifications', authenticate, authorize, async (req, res) => {
     }
 
 })
+
+
+router.post('/contact/notifications', authenticate, authorize, async (req, res) => {
+
+    const { message_id, user_id, chat_id, type, chat_type, message, status } = req.body
+
+
+    // 1)
+    const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+
+
+
+    try {
+
+        if (!message_id || !user_id || !chat_id || !type || !chat_type || !message || !status) {
+            throw { status: 400, message: `Please complete all required fields.` }
+        }
+
+        const notification_id = uuidv4()
+
+        // 1)
+        // ************ Creacion de chat *************
+
+
+        const chatDataForRegister = [notification_id, message_id, user_id, chat_id, type, chat_type, message, status]
+
+        const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
+
+
+        if (resultNotificationCreation.rowCount === 0) {
+            console.log('la propiedad rowCount indica que la notificacion no se creo con exito')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+
+        const data = {
+            notification_id: notification_id
+        }
+
+
+        res.status(201).json({ status: "OK", data: data });
+
+    } catch (error) {
+        console.error('Se produjo un error en el endpint POST /notifications:', error);
+
+        res.status(error?.status || 500)
+            .send({ status: "FAILED", data: { error: error?.message || error } });
+    }
+
+})
+
+
 
 // /notifications/?messageId=${messageId}
 router.delete('/notifications', authenticate, authorize, async (req, res) => {
@@ -187,7 +240,7 @@ router.delete('/notifications', authenticate, authorize, async (req, res) => {
 
 })
 
-// /all/notifications?chat_id=${chat_id}
+// DELETE /all/notifications?chat_id=${chat_id}
 router.delete('/all/notifications', authenticate, authorize, async (req, res) => {
 
     const {userId} = req.user
@@ -204,7 +257,7 @@ router.delete('/all/notifications', authenticate, authorize, async (req, res) =>
         }
 
         // 1)
-        // ************ Creacion de chat *************
+        // ************ Elminacion de notificaciones de chat *************
 
 
         const notificationDataForDetele = [userId, chat_id]
@@ -213,8 +266,8 @@ router.delete('/all/notifications', authenticate, authorize, async (req, res) =>
 
 
         if (resultNotificationCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que la notificacion no se elimino con exito')
-            throw { status: 500, message: `An error occurred, try again` }
+            console.log('la propiedad rowCount indica que no habia notificacion para eliminar con exito')
+            // throw { status: 500, message: `An error occurred, try again` }
         }
 
         

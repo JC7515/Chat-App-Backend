@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { SECRET_KEY_JWT } from '../../configEnv.js'
 import fs from 'fs'
 import { CreateSessionOutputFilterSensitiveLog } from '@aws-sdk/client-s3'
-import { ACCESS_TOKEN_NAME, REFRESH_TOKEN_NAME } from '../const/index.js'
+import { ACCESS_TOKEN_NAME, EMAIL_VALIDATION_TOKEN, REFRESH_TOKEN_NAME } from '../const/index.js'
 import connection from '../../connectionDb.cjs'
 import { v4 as uuidv4 } from 'uuid'
 import path from 'path'
@@ -22,14 +22,19 @@ const SECRETKEY = SECRET_KEY_JWT
  */
 export const GetDataOfToken = (request) => {
     // const header = request.authorization
+    try {
 
-    if (request) {
-        const token = request.replace('Bearer ', '')
-        const { userId, tokenrole } = jwt.verify(token, SECRETKEY)
-        return { userId, tokenrole }
+        if (request) {
+            const token = request.replace('Bearer ', '')
+            const { userId, tokenrole } = jwt.verify(token, SECRETKEY)
+            return { userId, tokenrole }
+        }
+
+        throw { status: 500, message: 'Autorization required'}
+
+    } catch (err) {
+        throw { status: 500, message: err.message || 'Cant verify the token' }
     }
-
-    throw { status: 500, message: 'Autorization required' }
 }
 
 
@@ -88,8 +93,8 @@ export const GenerateRefreshToken = (userId, tokenrole = REFRESH_TOKEN_NAME) => 
 }
 
 
-export const GenerateTokenToValidateUserMail = (userId) => {
-    return jwt.sign({ userId }, SECRETKEY, { expiresIn: '3 days' })
+export const GenerateTokenToValidateUserMail = (userId, tokenrole = EMAIL_VALIDATION_TOKEN) => {
+    return jwt.sign({ userId, tokenrole }, SECRETKEY, { expiresIn: '3 days' })
 }
 
 
@@ -108,7 +113,7 @@ export const GenerateSqlToUpdateProfileData = (frontData, dbFields) => {
     // aqui estamos filtrando el array de datos que nos llega del front, validando solo los datos que no sean undefined y agregando al arr dinamicStringData el string con el numbre del field a actualizar en la base de datos y su indice de posicion      
     let currentIndex = 0
 
-    frontData.forEach((field,index) => {
+    frontData.forEach((field, index) => {
         if (field) {
             currentIndex = currentIndex + 1
             dinamicStringData.push(`${dbFields[index]} = $${currentIndex}`)
@@ -289,7 +294,7 @@ export const CreateANewMessage = async (message) => {
 }
 
 
-export const CreateNewNotification = async (notification) => {
+export const CreateNewNotificationForGroup = async (notification) => {
 
     try {
 
@@ -298,11 +303,11 @@ export const CreateNewNotification = async (notification) => {
 
 
         // 2)
-        const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, group_id, type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+        const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, group_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)'
 
 
         // 3)
-        const sqlForGetUserNotifications = 'SELECT * FROM notifications WHERE user_id = $1'
+        const sqlForGetUserNotifications = 'SELECT * FROM notifications WHERE user_id = $1 AND chat_type = $2'
 
 
         // await new Promise(
@@ -310,7 +315,7 @@ export const CreateNewNotification = async (notification) => {
         // )
 
 
-        if (!notification.message_id || !notification.participant_id || !notification.chat_id || !notification.group_id || !notification.type || !notification.message || !notification.status) {
+        if (!notification.message_id || !notification.participant_id || !notification.chat_id || !notification.group_id || !notification.type || !notification.chat_type || !notification.message || !notification.status) {
             throw { status: 400, message: `Please complete all required fields.` }
         }
 
@@ -334,7 +339,7 @@ export const CreateNewNotification = async (notification) => {
         // ************ Creacion de chat *************
         const notification_id = uuidv4()
 
-        const chatDataForRegister = [notification_id, notification.message_id, notification.participant_id, notification.chat_id, notification.group_id, notification.type, notification.message, notification.status]
+        const chatDataForRegister = [notification_id, notification.message_id, notification.participant_id, notification.chat_id, notification.group_id, notification.type, notification.chat_type, notification.message, notification.status]
 
         const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
 
@@ -347,7 +352,7 @@ export const CreateNewNotification = async (notification) => {
         // 3)
         // ************ Obtener todas las notificaciones del usurario *************
 
-        const dataForGetNotifications = [notification.participant_id]
+        const dataForGetNotifications = [notification.participant_id, notification.chat_type]
 
         const resultOfGetUserNotifications = await connection.query(sqlForGetUserNotifications, dataForGetNotifications)
 
@@ -369,5 +374,433 @@ export const CreateNewNotification = async (notification) => {
         return { status: "FAILED", data: { error: error?.message } }
     }
 
+
+}
+
+
+
+export const CreateNewNotificationForContact = async (notification) => {
+
+    try {
+
+        // // 1)
+        // const sqlForValidateMessageId = 'SELECT * FROM messages WHERE message_id = $1'
+
+
+        // 2)
+        const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+
+
+        // 3)
+        const sqlForGetUserNotifications = 'SELECT * FROM notifications WHERE user_id = $1 AND chat_type = $2'
+
+
+        // await new Promise(
+        //     (resolve) => { resolve(setTimeout(() => { console.log('se ejecuto el settimeout ') }, 500)) }
+        // )
+
+
+        if (!notification.message_id || !notification.participant_id || !notification.chat_id || !notification.type || !notification.chat_type || !notification.message || !notification.status) {
+            throw { status: 400, message: `Please complete all required fields.` }
+        }
+
+        // 1)
+        // ************ Validamos que el message_id de la notificacion exista, para evitar errorres *************
+
+        // const dataForGetMessageId = [message_id]
+
+        // const resultOfFindMessage = await connection.query(sqlForValidateMessageId, dataForGetMessageId)
+
+        // console.log(resultOfFindMessage.rows)
+
+
+        // if (resultOfFindMessage.rows.length === 0) {
+        //     console.log(`No se encontro el message con message_id: ${message_id}, por lo que se evito proceder con el registro de la notificacion`)
+
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
+
+        // 2)
+        // ************ Creacion de chat *************
+        const notification_id = uuidv4()
+
+        const chatDataForRegister = [notification_id, notification.message_id, notification.participant_id, notification.chat_id, notification.type, notification.chat_type, notification.message, notification.status]
+
+        const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
+
+
+        if (resultNotificationCreation.rowCount === 0) {
+            console.log('la propiedad rowCount indica que la notificacion no se creo con exito')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+        // 3)
+        // ************ Obtener todas las notificaciones del usurario *************
+
+        const dataForGetNotifications = [notification.participant_id, notification.chat_type]
+
+        const resultOfGetUserNotifications = await connection.query(sqlForGetUserNotifications, dataForGetNotifications)
+
+
+        const userNotificationsObtained = resultOfGetUserNotifications.rows
+
+        console.log(userNotificationsObtained)
+
+        const data = {
+            user_notifications: userNotificationsObtained
+        }
+
+
+        return { status: "OK", data }
+
+    } catch (error) {
+        console.error('Se produjo un error en el endpint POST /notifications:', error);
+
+        return { status: "FAILED", data: { error: error?.message } }
+    }
+
+
+}
+
+
+export const UpdateSocketIdOfUser = async (newSocketId, lastSocketId) => {
+
+    const sqlToGetUserData = 'SELECT user_id, socket_id FROM users WHERE socket_id = $1'
+
+    const sqlTOUpdateSocketId = "UPDATE users SET socket_id = $1 WHERE user_id = $2"
+
+
+    try {
+
+
+        if (!newSocketId) {
+            console.log('faltaron datos en el envio de la peticion PUT /users/socketId')
+            throw {
+                status: 400, message: `An error occurred, try again
+            ​` }
+        }
+
+
+
+        // 1)
+        // ************ Obtencion de los datos del usuario *************
+
+
+        const dataForGetUserId = [lastSocketId]
+
+
+        const resultsOfGetUserData = await connection.query(sqlToGetUserData, dataForGetUserId)
+
+        const userDataObtained = resultsOfGetUserData.rows[0]
+
+
+        console.log(userDataObtained)
+
+
+        if (userDataObtained.length === 0) {
+            console.log('la propiedad length indica que no ah obtenido ningun usuario con exito ')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+
+        // 2)
+        // ************ Actualizacion de socket id *************
+
+        const dataForUpdateSocketId = [newSocketId, userDataObtained.user_id]
+
+
+        const resultsOfUpdateUserData = await connection.query(sqlTOUpdateSocketId, dataForUpdateSocketId)
+
+
+        if (resultsOfUpdateUserData.rowCount === 0) {
+            console.log('la propiedad rowCount indica que el no se actualizo la columna socketid del usuario con exito')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+        // console.log(ListOfUserFounds)
+
+
+        return { status: "OK" }
+
+    } catch (error) {
+        console.error('Se produjo un error en el endpint GET /users :', error);
+
+        return { status: "FAILED", data: { error: error?.message } }
+    }
+
+}
+
+
+
+export const UpdateChatParticipantStatus = async (socketId) => {
+
+    // 1) 
+    const sqlToGetUserData = 'SELECT user_id FROM users WHERE socket_id = $1'
+
+    // 2)
+    const sqlToGetChatParticipantData = 'SELECT chat_id FROM chat_participants WHERE user_id = $1 AND status = $2'
+
+    // 3)  
+    const sqlToUpdateChatParticipantStatus = 'UPDATE chat_participants SET status = $1 WHERE user_id = $2 AND chat_id = $3'
+
+
+
+    // ***********************
+
+
+    // 4)
+    const sqlTOGetUserContacts = 'SELECT user_id, contact_user_id, chat_id FROM contacts WHERE user_id = $1'
+
+    // 5)
+    const sqlToGetContactSocketId = 'SELECT user_id, socket_id FROM users WHERE user_id = $1'
+
+
+
+    try {
+
+
+        if (!socketId) {
+            console.log('faltaron datos en el envio de lA funcion UpdateChatParticipantStatus')
+            throw {
+                status: 400, message: `An error occurred, try again
+            ​` }
+        }
+
+
+
+        // 1)
+        // ************ Obtencion de los datos del usuario por socketId *************
+
+
+        const dataForGetUserId = [socketId]
+
+
+        const resultsOfGetUserData = await connection.query(sqlToGetUserData, dataForGetUserId)
+
+        const userDataObtained = resultsOfGetUserData.rows[0]
+
+
+        console.log(userDataObtained)
+
+
+        if (resultsOfGetUserData.rows.length === 0) {
+            console.log('la propiedad length indica que no ah obtenido ningun usuario con exito ')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+
+        // 2)
+        // ************ Validacion y obtencion del chat_id en el que se encuentra en el usuario antes de desconexion *************
+
+        const statusValueToFind = "active"
+
+        const dataForGetChatId = [userDataObtained.user_id, statusValueToFind]
+
+
+        const resultsOfGetChatId = await connection.query(sqlToGetChatParticipantData, dataForGetChatId)
+
+
+        const chatIdObtained = resultsOfGetChatId.rows[0]
+
+        console.log(chatIdObtained)
+
+        // if (resultsOfGetChatId.rows.length === 0) {
+        //     console.log('la propiedad length indica que no ah obtenido ningun chatId con exito ')
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
+
+
+        // Aqui actualizamos el estatus de partcipante en el chat, siempre que exista un chat id en el que el usuario este conectado
+        if (chatIdObtained !== undefined) {
+
+            // 3)
+            // ************ Aqui actualizamos el estatus de partcipante en el chat *************
+
+            const newStatus = "inactive"
+
+            const dataForUpdateChatParticipantStatus = [newStatus, userDataObtained.user_id, chatIdObtained.chat_id]
+
+
+            const resultsOfUpdateStatus = await connection.query(sqlToUpdateChatParticipantStatus, dataForUpdateChatParticipantStatus)
+
+
+
+            if (resultsOfUpdateStatus.rowCount === 0) {
+                console.log('la propiedad length indica que no ah se ah actualizado ningun status de participante de chat con exito ')
+                throw { status: 500, message: `An error occurred, try again` }
+            }
+
+
+        }
+
+
+        // 4)
+        // ************ Obtencion de la lista de contactos del usuario a punto de ser desconectado *************
+
+
+        const dataForGetConctacList = [userDataObtained.user_id]
+
+
+        const resultsOfGetContactList = await connection.query(sqlTOGetUserContacts, dataForGetConctacList)
+
+
+        const contactsListObtained = resultsOfGetContactList.rows
+
+
+        // if (contactsListObtained.length === 0) {
+        //     console.log('la propiedad length indica que no ah obtenido ningun contacto con exito ')
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
+
+
+
+        // 5)
+        // ************ Mapeo de la data de los contactos con el socket_id del contacto *************
+
+        let contactList = undefined
+
+        if (contactsListObtained.length > 0) {
+
+            contactList = await Promise.all(
+                contactsListObtained.map(async (contact) => {
+
+                    const dataForGetContactSocketId = [contact.contact_user_id]
+
+                    const resultsOfGetContactSocketId = await connection.query(sqlToGetContactSocketId, dataForGetContactSocketId)
+
+                    const contactSocketIdObtained = resultsOfGetContactSocketId.rows[0]
+
+                    const objetToReturn = {
+                        user_id: contact.user_id,
+                        chat_id: contact.chat_id,
+                        contact_user: contactSocketIdObtained
+                    }
+
+
+                    // if (contactsListObtained.length === 0) {
+                    //     console.log('la propiedad length indica que no ah obtenido ningun contacto con exito ')
+                    //     throw { status: 500, message: `An error occurred, try again` }
+                    // }
+
+
+                    return objetToReturn
+
+                })
+            )
+        }
+
+
+        console.log(contactList)
+        const chatIdValue = !chatIdObtained ? 'empty' : chatIdObtained.chat_id
+
+
+        const data = {
+            chatId: chatIdValue,
+            contactList: contactList
+        }
+
+        return { status: "OK", data: data }
+
+    } catch (error) {
+        console.error('Se produjo un error en la funcion UpdateChatParticipantStatus ', error);
+
+        return { status: "FAILED", data: { error: error?.message } }
+    }
+
+}
+
+
+
+export const GetContactListOfUser = async (userId) => {
+
+
+    // 1)
+    const sqlToGetUserContacts = 'SELECT user_id, contact_user_id, chat_id FROM contacts WHERE user_id = $1'
+
+    // 2)
+    const sqlToGetContactSocketId = 'SELECT user_id, socket_id FROM users WHERE user_id = $1'
+
+
+
+    try {
+
+
+        if (!userId) {
+            console.log('faltaron datos en el envio de lA funcion UpdateChatParticipantStatus')
+            throw {
+                status: 400, message: `An error occurred, try again
+            ​` }
+        }
+
+
+        // 4)
+        // ************ Obtencion de la lista de contactos del usuario a punto de ser desconectado *************
+
+
+        const dataForGetConctacList = [userId]
+
+
+        const resultsOfGetContactList = await connection.query(sqlToGetUserContacts, dataForGetConctacList)
+
+
+        const contactsListObtained = resultsOfGetContactList.rows
+
+
+        // if (contactsListObtained.length === 0) {
+        //     console.log('la propiedad length indica que no ah obtenido ningun contacto con exito ')
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
+
+
+
+        // 5)
+        // ************ Mapeo de la data de los contactos con el socket_id del contacto *************
+
+        let contactList = undefined
+
+        if (contactsListObtained.length > 0) {
+
+            contactList = await Promise.all(
+                contactsListObtained.map(async (contact) => {
+
+                    const dataForGetContactSocketId = [contact.contact_user_id]
+
+                    const resultsOfGetContactSocketId = await connection.query(sqlToGetContactSocketId, dataForGetContactSocketId)
+
+                    const contactSocketIdObtained = resultsOfGetContactSocketId.rows[0]
+
+                    const objetToReturn = {
+                        user_id: contact.user_id,
+                        chat_id: contact.chat_id,
+                        contact_user: { ...contactSocketIdObtained }
+                    }
+
+
+                    // if (contactsListObtained.length === 0) {
+                    //     console.log('la propiedad length indica que no ah obtenido ningun contacto con exito ')
+                    //     throw { status: 500, message: `An error occurred, try again` }
+                    // }
+
+
+                    return objetToReturn
+
+                })
+            )
+        }
+
+
+        console.log(contactList)
+
+        const data = {
+            contactList: contactList
+        }
+
+        return { status: "OK", data: data }
+
+    } catch (error) {
+        console.error('Se produjo un error en el endpint GET /users :', error);
+
+        return { status: "FAILED", data: { error: error?.message } }
+    }
 
 }

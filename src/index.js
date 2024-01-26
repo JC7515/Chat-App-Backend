@@ -17,6 +17,10 @@ import members from './v1/routes/membersRoutes.js'
 import messages from './v1/routes/messagesRoutes.js'
 import chatsParticipants from './v1/routes/chatParticipants.js'
 import notifications from './v1/routes/notificationsRoutes.js'
+import contacts from './v1/routes/contactsRoutes.js'
+import blocks from './v1/routes/blocksRoutes.js'
+import chatHistoryDeletions from './v1/routes/chatHistoryDeletionsRouters.js'
+import emails from './v1/routes/emailsRoutes.js'
 
 app.use(morgan('dev'))
 
@@ -55,6 +59,11 @@ app.use('/v1', members)
 app.use('/v1', messages)
 app.use('/v1', chatsParticipants)
 app.use('/v1', notifications)
+app.use('/v1', contacts)
+app.use('/v1', blocks)
+app.use('/v1', chatHistoryDeletions)
+app.use('/v1', emails)
+
 // app.use('/v1', groups)
 // app.use('/v1',memberships)
 
