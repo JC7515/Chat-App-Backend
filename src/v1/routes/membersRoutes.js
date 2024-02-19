@@ -62,15 +62,15 @@ router.get('/members', authenticate, authorize, async (req, res) => {
                 }
 
                 console.log(userDataModified)
-                
-                if(member.role === 'admin'){
-                    
+
+                if (member.role === 'admin') {
+
                     const sqlforGetInvitationId = 'SELECT invitation_id FROM groups WHERE group_id = $1'
 
                     const groupDataForSql = [member.group_id]
-    
+
                     const resultOfGetInvitationId = await connection.query(sqlforGetInvitationId, groupDataForSql)
-    
+
                     const invitationIdValue = resultOfGetInvitationId.rows[0].invitation_id
 
                     return {
@@ -80,7 +80,7 @@ router.get('/members', authenticate, authorize, async (req, res) => {
                         role: member.role,
                     }
                 }
-                
+
                 return {
                     group_id: member.group_id,
                     user: userDataModified,
@@ -108,6 +108,113 @@ router.get('/members', authenticate, authorize, async (req, res) => {
 }
 )
 
+
+
+
+// /members/?group_id={group_id}
+router.get('/validateMembers', authenticate, authorize, async (req, res) => {
+
+    const { userId } = req.user
+    const { group_id } = req.query
+
+
+    try {
+
+
+        // if (!group_id) {
+        //     throw { status: 404, message: `the user has not selected any group.` }
+        // }
+
+        const sql = 'SELECT * FROM group_members WHERE group_id = $1'
+        const groupData = [group_id]
+
+
+        const resultOfGetMembers = await connection.query(sql, groupData)
+
+
+        if (resultOfGetMembers.rows.length === 0) {
+            console.log('la propiedad rows indica que no se encontro ningun miembro con esa id de grupo  en GET /members')
+            // throw { status: 404, message: `Member not Found, try again` }
+        }
+
+
+        const membersList = resultOfGetMembers.rows
+
+        let membersListOfGroup = []
+
+        if (membersList.length > 0) {
+
+            // aqui mapeamos los datos para devolver un array de objetos con la misma estructura de un objeto group_members, pero cambiando la propiedad user_id por user y otorgandole los datos del usuario obtenido a la propiedad user   
+
+            membersListOfGroup = await Promise.all(
+                membersList.map(async (member, index) => {
+
+                    const sql = 'SELECT socket_id,user_id, username, name, profile_picture FROM users WHERE user_id = $1'
+
+                    const userDataForSql = [member.user_id]
+
+
+                    const resultOfGetUserData = await connection.query(sql, userDataForSql)
+
+                    const userDataObtained = resultOfGetUserData.rows[0]
+
+                    // aqui obtenemos la url de la imagen de perfil del miembro
+                    const profilePictureUrl = await GetFileUrl(userDataObtained.profile_picture, 88000)
+
+                    // aqui asignamos la url de la imagen de perfil a la propiedad profile_picture
+                    const userDataModified = {
+                        ...userDataObtained,
+                        profile_picture: profilePictureUrl
+                    }
+
+                    console.log(userDataModified)
+
+                    if (member.role === 'admin') {
+
+                        const sqlforGetInvitationId = 'SELECT invitation_id FROM groups WHERE group_id = $1'
+
+                        const groupDataForSql = [member.group_id]
+
+                        const resultOfGetInvitationId = await connection.query(sqlforGetInvitationId, groupDataForSql)
+
+                        const invitationIdValue = resultOfGetInvitationId.rows[0].invitation_id
+
+                        return {
+                            group_id: member.group_id,
+                            user: userDataModified,
+                            invitation_id: invitationIdValue,
+                            role: member.role,
+                        }
+                    }
+
+                    return {
+                        group_id: member.group_id,
+                        user: userDataModified,
+                        role: member.role,
+                    }
+
+                })
+
+            )
+
+        }
+
+
+        const data = {
+            members_list: membersListOfGroup
+        }
+
+        res.status(201).json({ status: "OK", data: data });
+
+
+    } catch (error) {
+        console.error('Se produjo un error en el endpint GET /members :', error);
+
+        res.status(error?.status || 500)
+            .send({ status: "FAILED", data: { error: error?.message || error } });
+    }
+}
+)
 
 // /members
 router.post('/members', authenticate, authorize, async (req, res) => {
@@ -302,7 +409,7 @@ router.delete('/members', authenticate, authorize, async (req, res) => {
 
     // 1)
     const sqlForDeleteMember = 'DELETE FROM group_members WHERE user_id = $1 AND group_id = $2'
-    
+
     // 2)
     const sqlForDeleteParticipant = 'DELETE FROM chat_participants WHERE user_id = $1 AND chat_id = $2'
 
@@ -346,7 +453,7 @@ router.delete('/members', authenticate, authorize, async (req, res) => {
 
 
     } catch (error) {
-        console.error('Se produjo un error en el endpint POST /members :', error);
+        console.error('Se produjo un error en el endpint  DELETE /members :', error);
 
         res.status(error?.status || 500)
             .send({ status: "FAILED", data: { error: error?.message || error } });

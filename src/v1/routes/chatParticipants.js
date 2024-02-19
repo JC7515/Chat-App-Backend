@@ -13,6 +13,7 @@ router.get('/contact/chatParticipant', authenticate, authorize, async (req, res)
     const { chat_id } = req.query
 
     
+    // 1)
     const sqlForGetChatData = 'SELECT * FROM chats WHERE chat_id = $1'
     
     

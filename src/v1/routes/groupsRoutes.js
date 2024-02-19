@@ -210,7 +210,7 @@ router.delete('/groups', authenticate, authorize, async (req, res) => {
 
     try {
 
-        if (!userId || !groupId) {
+        if (!chatId || !groupId) {
             throw { status: 400, message: `please fill in the missing fields` }
         }
 
@@ -239,10 +239,10 @@ router.delete('/groups', authenticate, authorize, async (req, res) => {
         const resultOfDeleteMessages = await connection.query(sqlForDeleteGroupMessages, dataForDeleteMessages)
 
 
-        if (resultOfDeleteMessages.rowCount === 0) {
-            console.log('la propiedad rowCount indica que los mensajes del grupo no se elimino con exito DELETE /grupo')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
+        // if (resultOfDeleteMessages.rowCount === 0) {
+        //     console.log('la propiedad rowCount indica que los mensajes del grupo no se elimino con exito DELETE /grupo')
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
 
 
 

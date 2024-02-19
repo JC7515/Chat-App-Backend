@@ -396,7 +396,8 @@ export const socket = io.on('connection', (socket) => {
         //  aqui si emitimos el resultado de la actualizacion del valor de su socketid del usuario en la base de datos 
         if (resultOfCreateNotification) {
             const dataToSend = {
-                groupId: groupId, userNotificiationsList: resultOfCreateNotification.data.user_notifications,
+                groupId: groupId, 
+                userNotificiationsList: resultOfCreateNotification.data.user_notifications,
                 currentNotificationData: currentNotificationData
             }
 
