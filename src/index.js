@@ -15,11 +15,11 @@ import groups from './v1/routes/groupsRoutes.js'
 import users from './v1/routes/usersRoutes.js'
 import members from './v1/routes/membersRoutes.js'
 import messages from './v1/routes/messagesRoutes.js'
-import chatsParticipants from './v1/routes/chatParticipants.js'
+import chatsParticipants from './v1/routes/chatParticipantsRoutes.js'
 import notifications from './v1/routes/notificationsRoutes.js'
 import contacts from './v1/routes/contactsRoutes.js'
 import blocks from './v1/routes/blocksRoutes.js'
-import chatHistoryDeletions from './v1/routes/chatHistoryDeletionsRouters.js'
+import chatHistoryDeletions from './v1/routes/chatHistoryDeletionsRoutes.js'
 import emails from './v1/routes/emailsRoutes.js'
 
 app.use(morgan('dev'))

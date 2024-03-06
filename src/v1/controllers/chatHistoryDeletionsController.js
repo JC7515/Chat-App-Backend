@@ -1,16 +1,10 @@
-import express from "express";
 import connection from "../../connectionDb.cjs";
-import { authenticate } from "../middlewares/authenticate.js";
-import { authorize } from "../middlewares/authorize.js";
 import { v4 as uuidv4 } from 'uuid'
-import { GetCurrentDateString, GetTwoGroupInicials } from "../helpers/index.js";
-import { GetFileUrl } from "../../s3.js";
-const router = express.Router()
+import { GetCurrentDateString } from "../helpers/index.js";
 
 
 
-// POST /contact/chathistoryDeletions/
-router.post('/contact/chathistoryDeletions', authenticate, authorize, async (req, res) => {
+export const saveChatHistoryDeletions = async (req, res) => {
 
     const { userId } = req.user
     const { chatId } = req.body
@@ -56,8 +50,4 @@ router.post('/contact/chathistoryDeletions', authenticate, authorize, async (req
             .send({ status: "FAILED", data: { error: error?.message || error } });
     }
 
-})
-
-
-
-export default router
+}

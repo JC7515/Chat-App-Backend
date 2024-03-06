@@ -1,13 +1,7 @@
-import express from "express";
 import connection from "../../connectionDb.cjs";
-import { authenticate } from "../middlewares/authenticate.js";
-import { authorize } from "../middlewares/authorize.js";
-import { v4 as uuidv4 } from 'uuid'
-const router = express.Router()
 
 
-// aqui obtenemos los datos de un chat de tipo contact
-router.get('/contact/chatParticipant', authenticate, authorize, async (req, res) => {
+export const getContactChatParticipants = async (req, res) => {
 
     const { userId } = req.user
     const { chat_id } = req.query
@@ -92,11 +86,10 @@ router.get('/contact/chatParticipant', authenticate, authorize, async (req, res)
             .send({ status: "FAILED", data: { error: error?.message || error } });
     }
 }
-)
 
-// GET /groups/contacts/?chat_id=${chatId}
-// aqui obtenemos los datos de un chat de tipo group
-router.get('/groups/chatParticipant', authenticate, authorize, async (req, res) => {
+
+
+export const getGroupChatParticipants = async (req, res) => {
 
     const { userId } = req.user
     const { chat_id } = req.query
@@ -176,15 +169,12 @@ router.get('/groups/chatParticipant', authenticate, authorize, async (req, res) 
             .send({ status: "FAILED", data: { error: error?.message || error } });
     }
 
-})
+}
 
 
 
 
-// aqui actualizamos el status del participante del chat cuando ingresa o sale de un chat de Contacto
-
-// PUT /contact/chatParticipant/?chatId=${chatId}&participantId=${participantId}&newStatus=${newStatus}
-router.put('/chatParticipant', authenticate, authorize, async (req, res) => {
+export const updateChatParticipant = async (req, res) => {
 
     const { chatId, participantId, newStatus } = req.query
 
@@ -267,6 +257,4 @@ router.put('/chatParticipant', authenticate, authorize, async (req, res) => {
             .send({ status: "FAILED", data: { error: error?.message || error } });
     }
 
-})
-
-export default router
+}
