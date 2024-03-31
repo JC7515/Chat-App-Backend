@@ -1,6 +1,6 @@
 import connection from "../../connectionDb.cjs";
 import { v4 as uuidv4 } from 'uuid'
-import {  } from "../services/blocksService.js";
+import blocksService from "../services/blocksService.js";
 
 
 // Aqui obtenemos obtenemos la validacon si este usuario ah bloqueado al contacto del chatId que se pasa como valor 
@@ -30,26 +30,27 @@ export const getBlocks = async (req, res) => {
         // ************ Obtenemos todo el historial de bloqueos del usuario hacia el contacto *************  
 
 
-        const DataForRegisterBlock = [userId, contactUserId, chatId]
+        // const DataForRegisterBlock = [userId, contactUserId, chatId]
 
 
-        const resultOfGetBlocksData = await connection.query(sqlForGetBlocksOfUser, DataForRegisterBlock)
+        // const resultOfGetBlocksData = await connection.query(sqlForGetBlocksOfUser, DataForRegisterBlock)
 
-        const getBlockData = resultOfGetBlocksData.rows
+        // const getBlockData = resultOfGetBlocksData.rows
 
 
-        if (getBlockData.length === 0) {
-            console.log('no se devolvio como minimo el bloqueo de registro con estatus inactive en la lista de bloqueos hechos por el usuario a l contacto')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
+        // if (getBlockData.length === 0) {
+        //     console.log('no se devolvio como minimo el bloqueo de registro con estatus inactive en la lista de bloqueos hechos por el usuario a l contacto')
+        //     throw { status: 500, message: `An error occurred, try again` }
+        // }
 
     
 
-        // aqui validamos el ultimo bloqueo que hizo el usuario al contacto y si esta es activo, es decir que lo tiene bloqueado al contacto, para que se visualize de esta forma en la vista
-        const isContactBlockedForUser = getBlockData[getBlockData.length - 1].status === 'active' ? true : false
+        // // aqui validamos el ultimo bloqueo que hizo el usuario al contacto y si esta es activo, es decir que lo tiene bloqueado al contacto, para que se visualize de esta forma en la vista
+        // const isContactBlockedForUser = getBlockData[getBlockData.length - 1].status === 'active' ? true : false
 
+
+        const isContactBlockedForUser = await blocksService.getBlocks(userId, contactUserId, chatId, sqlForGetBlocksOfUser)
         
-
 
         const data = {
             is_Contact_Blocked: isContactBlockedForUser
@@ -71,8 +72,8 @@ export const getBlocks = async (req, res) => {
 export const saveBlocks = async (req, res) => {
 
 
-    const { userId } = req.user
-    const { contactUserId, blockStatus, chatId, blockDate } = req.body
+    // const { userId } = req.user
+    const { userId, contactUserId, blockStatus, chatId, blockDate } = req.body
 
 
     // 1)
@@ -98,14 +99,7 @@ export const saveBlocks = async (req, res) => {
 
         const DataForRegisterBlock = [block_id, userId, contactUserId, blockDate, chatId, blockStatus]
 
-
-        const resultOfBlocksCreation = await connection.query(sqlForResgisterNewBlock, DataForRegisterBlock)
-
-
-        if (resultOfBlocksCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que el nuevo contacto no se creo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
+        await blocksService.saveBlocks(DataForRegisterBlock, sqlForResgisterNewBlock)
 
         res.status(201).json({ status: "OK" });
 

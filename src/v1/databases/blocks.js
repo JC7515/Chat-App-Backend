@@ -1,17 +1,13 @@
 import connection from "../../connectionDb.cjs";
-import { v4 as uuidv4 } from 'uuid'
 
 
 // Aqui obtenemos obtenemos la validacon si este usuario ah bloqueado al contacto del chatId que se pasa como valor 
-export const getBlocks = async (userId, contactUserId, chatId, sqlForGetBlocksOfUser) => {
+const getBlocks = async (DataForRegisterBlock, sqlForGetBlocksOfUser) => {
 
     try {
-        
+
         // 1)
         // ************ Obtenemos todo el historial de bloqueos del usuario hacia el contacto *************  
-
-
-        const DataForRegisterBlock = [userId, contactUserId, chatId]
 
 
         const resultOfGetBlocksData = await connection.query(sqlForGetBlocksOfUser, DataForRegisterBlock)
@@ -23,7 +19,7 @@ export const getBlocks = async (userId, contactUserId, chatId, sqlForGetBlocksOf
             console.log('no se devolvio como minimo el bloqueo de registro con estatus inactive en la lista de bloqueos hechos por el usuario a l contacto')
             throw { status: 500, message: `An error occurred, try again` }
         }
-        
+
 
         return getBlockData
 
@@ -35,15 +31,26 @@ export const getBlocks = async (userId, contactUserId, chatId, sqlForGetBlocksOf
 
 
 
-export const saveBlocks = async (req, res) => {
+const saveBlocks = async (DataForRegisterBlock,sqlForResgisterNewBlock) => {
 
 
     try {
-        
 
+        const resultOfBlocksCreation = await connection.query(sqlForResgisterNewBlock, DataForRegisterBlock)
+
+
+        if (resultOfBlocksCreation.rowCount === 0) {
+            console.log('la propiedad rowCount indica que el nuevo contacto no se creo con exito')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+        return resultOfBlocksCreation 
 
     } catch (error) {
         throw { status: 500, message: error?.message || error };
     }
 
 }
+
+
+export default { getBlocks, saveBlocks }

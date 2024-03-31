@@ -2,7 +2,7 @@ import { GenerateTokenToValidateUserMail, HashPassword } from "../utils/index.js
 import { v4 as uuidv4 } from 'uuid'
 import connection from "../../connectionDb.cjs";
 import { SendEmailValidation } from "../../resend.js";
-
+import signUpService from "../services/signUpService.js";
 
 export const saveNewRegisteredUser = async (req, res) => {
     const { username,
@@ -56,22 +56,7 @@ export const saveNewRegisteredUser = async (req, res) => {
         }
 
 
-        const result = await connection.query(sql, userDataForRegister)
-
-        if (result.rowCount === 0) {
-            console.log('la propiedad rowCount indica que no hay registros insertados con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
-        // const tokenForValidateEmail = GenerateTokenToValidateUserMail(user_id)
-
-        // console.log(tokenForValidateEmail)
-
-        // const validationUrl = `http://localhost:3000/emailVerification/${tokenForValidateEmail}`
-
-        // // const sendEmailValidation = await SendEmailValidation(email, validationUrl)
-
-        // await SendEmailValidation(email, validationUrl)
+        await signUpService.saveNewRegisteredUser(sql, userDataForRegister, user_id, email)
 
 
         res.status(201).json({ status: "OK" });

@@ -4,11 +4,21 @@ import { GetCurrentDateString } from "../helpers/index.js";
 
 
 
-export const saveChatHistoryDeletions = async (req, res) => {
+const saveChatHistoryDeletions = async (dataForCreatechathistoryDeletion, sqlForCreatechathistoryDeletion) => {
 
     
     try {
         
+
+        const resultOfQuery = await connection.query(sqlForCreatechathistoryDeletion, dataForCreatechathistoryDeletion)
+
+
+        if (resultOfQuery.rowCount === 0) {
+            console.log('la propiedad rowCount indica que el registro de historial de mensajes elminado no se realizo con exito POST /groups')
+            throw { status: 500, message: `An error occurred, try again` }
+        }
+
+        return resultOfQuery
 
 
     } catch (error) {
@@ -16,3 +26,6 @@ export const saveChatHistoryDeletions = async (req, res) => {
     }
 
 }
+
+
+export default { saveChatHistoryDeletions }

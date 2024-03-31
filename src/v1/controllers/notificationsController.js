@@ -2,7 +2,7 @@ import connection from "../../connectionDb.cjs";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
 import { v4 as uuidv4 } from 'uuid'
-
+import notificationsService from "../services/notificationsService.js";
 
 
 
@@ -10,7 +10,6 @@ export const getNotificacions =  async (req, res) => {
 
     const { userId } = req.user
     
-
 
     // 1)
     const sqlForGetAllNotifications = 'SELECT * FROM notifications WHERE user_id = $1'
@@ -21,18 +20,10 @@ export const getNotificacions =  async (req, res) => {
         // ************ Creacion de chat *************
 
         const userData = [userId]
-
-        const resultOfGetAllNotifications = await connection.query(sqlForGetAllNotifications, userData)
-
-
-        let allNotificationsObtained = resultOfGetAllNotifications.rows
-
-        if (resultOfGetAllNotifications.rows.length === 0) {
-            console.log('la propiedad rows indica que no se encontraron notificaciones')
-            allNotificationsObtained = []     
-        }
+       
+        
+        const allNotificationsObtained = await  notificationsService.getNotificacions(sqlForGetAllNotifications, userData) 
     
-        console.log(allNotificationsObtained)
      
         const data = {
             notifications_list: allNotificationsObtained
@@ -68,17 +59,7 @@ export const getAllNotifications = async (req, res) => {
 
         const chatData = [userId, chat_id]
 
-        const resultOfGetAllNotifications = await connection.query(sqlForGetAllNotifications, chatData)
-
-
-        let allNotificationsObtained = resultOfGetAllNotifications.rows
-
-        if (resultOfGetAllNotifications.rows.length === 0) {
-            console.log('la propiedad rows indica que no se encontraron notificaciones')
-            allNotificationsObtained = []     
-        }
-    
-        console.log(allNotificationsObtained)
+        const allNotificationsObtained = await  notificationsService.getAllNotifications(sqlForGetAllNotifications, chatData) 
      
         const data = {
             notifications_list: allNotificationsObtained
@@ -121,14 +102,8 @@ export const saveGroupNotifications = async (req, res) => {
 
         const chatDataForRegister = [notification_id, message_id, user_id, chat_id, group_id, type, chat_type, message, status]
 
-        const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
-
-
-        if (resultNotificationCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que la notificacion no se creo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
+        await notificationsService.saveGroupNotifications(sqlForCreateNotification, chatDataForRegister) 
+     
 
         const data = {
             notification_id: notification_id
@@ -172,14 +147,9 @@ export const saveContactNotificaciones = async (req, res) => {
 
         const chatDataForRegister = [notification_id, message_id, user_id, chat_id, type, chat_type, message, status]
 
-        const resultNotificationCreation = await connection.query(sqlForCreateNotification, chatDataForRegister)
-
-
-        if (resultNotificationCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que la notificacion no se creo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
+        
+        await notificationsService.saveContactNotifications(sqlForCreateNotification, chatDataForRegister) 
+     
 
         const data = {
             notification_id: notification_id
@@ -214,17 +184,11 @@ export const deleteNotifications = async (req, res) => {
         // 1)
         // ************ Eliminacion de notificaciones *************
 
-
         const notificationDataForDetele = [messageId]
 
-        const resultNotificationCreation = await connection.query(sqlForDeleteNotification, notificationDataForDetele)
 
-
-        if (resultNotificationCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que la notificacion no se elimino con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
+        await notificationsService.deleteNotifications(sqlForDeleteNotification, notificationDataForDetele) 
+        
         
         res.status(201).json({ status: "OK" });
 
@@ -259,14 +223,8 @@ export const deleteAllNotifications = async (req, res) => {
 
         const notificationDataForDetele = [userId, chat_id]
 
-        const resultNotificationCreation = await connection.query(sqlForDeleteNotifications, notificationDataForDetele)
-
-
-        if (resultNotificationCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que no habia notificacion para eliminar con exito')
-            // throw { status: 500, message: `An error occurred, try again` }
-        }
-
+        await notificationsService.deleteAllNotifications(sqlForDeleteNotifications, notificationDataForDetele) 
+        
         
         res.status(201).json({ status: "OK" });
 

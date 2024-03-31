@@ -1,7 +1,7 @@
 import express from 'express';
 import { Server as SocketServer } from 'socket.io'
 import http from 'http'
-import { AUTH_EVENT, A_ADMIN_HAS_DELETED_YOU_CHAT_EVENT, A_PARTICIPANT_CHANGED_TO_ROLE_EVENT, A_PARTICIPANT_DELETED_BY_ADMIN_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_CONTACT_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_LEFT_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_CONTACT_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_GROUP_CHAT_EVENT, BLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT, CONTACT_MESSAGE_EVENT, CONTACT_NOTIFICATION_MESSAGE_EVENT, GET_USER_SOCKET_ID_EVENT, GROUP_MESSAGE_EVENT, GROUP_NOTIFICATION_MESSAGE_EVENT, IS_CONTACT_IN_THE_RECENT_MESSAGES_AREA_EVENT, NEW_GROUP_MEMBER_EVENT, NOTIFICATION_MESSAGE_EVENT, UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT,  USER_IS_ONLINE_EVENT, } from './v1/const/socketIoConst.js'
+import { AUTH_EVENT, A_ADMIN_HAS_DELETED_YOU_CHAT_EVENT, A_PARTICIPANT_CHANGED_TO_ROLE_EVENT, A_PARTICIPANT_DELETED_BY_ADMIN_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_CONTACT_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_LEFT_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_CONTACT_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_GROUP_CHAT_EVENT, BLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT, CONTACT_MESSAGE_EVENT, CONTACT_NOTIFICATION_MESSAGE_EVENT, DELETION_EXECUTED_BY_USER_TO_CONTACT_EVENT, GET_USER_SOCKET_ID_EVENT, GROUP_MESSAGE_EVENT, GROUP_NOTIFICATION_MESSAGE_EVENT, IS_CONTACT_IN_THE_RECENT_MESSAGES_AREA_EVENT, NEW_GROUP_MEMBER_EVENT, NOTIFICATION_MESSAGE_EVENT, UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT,  USER_IS_ONLINE_EVENT, } from './v1/const/socketIoConst.js'
 import { CreateANewMessage, GetDataOfToken, UpdateUserSocketId, CreateNewNotificationForContact, CreateNewNotificationForGroup, UpdateSocketIdOfUser, UpdateChatParticipantStatus, GetContactListOfUser } from './v1/utils/index.js';
 import { ConvertDateToDayFormat, ConvertDateToHourFormat } from './v1/helpers/index.js';
 export const app = express()
@@ -411,14 +411,14 @@ export const socket = io.on('connection', (socket) => {
     // ******** SOCKET PARA CREAR Y NOTIFICAR AL USUARIO SOBRE SUS NUEVA NOTIFICACIONES DE CONTACTO ***********/
     socket.on(CONTACT_NOTIFICATION_MESSAGE_EVENT, async (body) => {
 
-        const { socketId, messageId, userId, chatId, creatorProfilePicture, creatorUserId, creatorUserName, type, chatType, message, status } = body
+        const { socketId, messageId, userId, chatId, creatorProfilePicture, creatorUserId, creatorUserName, type, chatType, message, status, wasUserDeletedByHisContact } = body
 
         if (!body.socketId) {
             console.log('el usurio no fue encontrado')
             return
         }
 
-        console.log(socketId, messageId, userId, chatId, creatorProfilePicture, creatorUserId, type, chatType, message, status)
+        console.log(socketId, messageId, userId, chatId, creatorProfilePicture, creatorUserId, type, chatType, message, status, wasUserDeletedByHisContact)
 
 
 
@@ -433,6 +433,7 @@ export const socket = io.on('connection', (socket) => {
             type: type,
             message: message,
             status: status,
+            wasUserDeletedByHisContact: wasUserDeletedByHisContact
         }
 
         // aqui estamos actualizando el valor de la columna socketid de usario en la db
@@ -468,6 +469,7 @@ export const socket = io.on('connection', (socket) => {
 
     })
 
+
     socket.on(UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT, async (body) => {
 
         const { userId } = GetDataOfToken(body.authToken)
@@ -478,6 +480,23 @@ export const socket = io.on('connection', (socket) => {
         }
 
         socket.to(`chat${body.chatId}`).emit(UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT, { chat_id: body.chatId, contact_user_id: userId })
+
+    })
+
+    
+    socket.on(DELETION_EXECUTED_BY_USER_TO_CONTACT_EVENT, async (body) => {
+
+        const { userId } = GetDataOfToken(body.authToken)
+
+        if (!userId) {
+            console.log('el usurio no fue encontrado')
+            return
+        }
+
+        socket.to(body.contact_user_socket_id).emit(DELETION_EXECUTED_BY_USER_TO_CONTACT_EVENT, { chat_id: body.chatId, contact_user_id: userId  })
+
+        socket.leave(`chat${body.chatId}`)
+        console.log(`numero de rooms de evento Auth: ${socket.rooms.size}: ${socket.rooms}  `)
 
     })
 

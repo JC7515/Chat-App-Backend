@@ -1,18 +1,17 @@
 import connection from "../../connectionDb.cjs";
 import { v4 as uuidv4 } from 'uuid'
-import { getBlocks } from "../databases/blocks.js";
+import blocks from "../databases/blocks.js";
 
 
 // Aqui obtenemos obtenemos la validacon si este usuario ah bloqueado al contacto del chatId que se pasa como valor 
-export const getBlocks = async (userId, contactUserId, chatId, sqlForGetBlocksOfUser) => {
+const getBlocks = async (DataForRegisterBlock , sqlForGetBlocksOfUser) => {
 
     try {
         
         // 1)
         // ************ Obtenemos todo el historial de bloqueos del usuario hacia el contacto *************  
 
-  
-        const getBlockData = await getBlocks(userId, contactUserId, chatId, sqlForGetBlocksOfUser)
+        const getBlockData = await blocks.getBlocks(DataForRegisterBlock, sqlForGetBlocksOfUser)
     
 
         // aqui validamos el ultimo bloqueo que hizo el usuario al contacto y si esta es activo, es decir que lo tiene bloqueado al contacto, para que se visualize de esta forma en la vista
@@ -28,15 +27,22 @@ export const getBlocks = async (userId, contactUserId, chatId, sqlForGetBlocksOf
 
 
 
-export const saveBlocks = async (req, res) => {
+const saveBlocks = async (DataForRegisterBlock,sqlForResgisterNewBlock) => {
 
 
     try {
-        
 
+
+        const result = await blocks.saveBlocks(DataForRegisterBlock,sqlForResgisterNewBlock)
+
+        return result
 
     } catch (error) {
         throw error
     }
 
 }
+
+
+
+export default { getBlocks, saveBlocks }

@@ -1,10 +1,13 @@
 import connection from "../../connectionDb.cjs";
+import chatParticipants from "../databases/chatParticipants.js";
 
-
-export const getContactChatParticipants = async (req, res) => {
+const getContactChatParticipants = async (chatData, sqlForGetChatData, sqlForGetChatParticipants) => {
 
     try {
         
+        const result = await chatParticipants.getContactChatParticipants(chatData, sqlForGetChatData, sqlForGetChatParticipants)
+
+        return result
 
 
     } catch (error) {
@@ -14,10 +17,14 @@ export const getContactChatParticipants = async (req, res) => {
 
 
 
-export const getGroupChatParticipants = async (req, res) => {
+const getGroupChatParticipants = async (chatData, sqlForGetChatData, sqlForGetChatParticipants) => {
 
     try {
         
+      
+        const result = await chatParticipants.getGroupChatParticipants(chatData, sqlForGetChatData, sqlForGetChatParticipants)
+
+        return result
 
 
     } catch (error) {
@@ -29,14 +36,22 @@ export const getGroupChatParticipants = async (req, res) => {
 
 
 
-export const updateChatParticipant = async (req, res) => {
-
+const updateChatParticipant = async (getDataOFParticipant, updateStatusData,sqlForGetParticipantStatus, sqlForDesactiveAllParticipantStatus, sqlForUpdateStatus) => {
     
     try {
+
+
         
+        const result = await chatParticipants.updateChatParticipants(getDataOFParticipant, updateStatusData,sqlForGetParticipantStatus, sqlForDesactiveAllParticipantStatus, sqlForUpdateStatus)
+
+        return result
 
 
     } catch (error) {
         throw error
     }
 }
+
+
+
+export default { getContactChatParticipants, getGroupChatParticipants, updateChatParticipant }

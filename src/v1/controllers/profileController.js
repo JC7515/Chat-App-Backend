@@ -1,7 +1,7 @@
 import connection from "../../connectionDb.cjs";
 import { DeleteFile, GetFileUrl, UploadFile } from "../../s3.js";
 import { GenerateNewFileNameOfProfile, GenerateSqlToUpdateProfileData } from "../utils/index.js";
-
+import profileService from "../services/profileService.js";
 
 export const getUserData = async (req, res) => {
 
@@ -9,33 +9,15 @@ export const getUserData = async (req, res) => {
 
     // console.log(userId)
 
-    let profilePictureUrl = ''
+    // let profilePictureUrl = ''
 
     try {
 
         const sql = 'SELECT * FROM users WHERE user_id = $1'
         const userData = [userId]
 
-
-        const result = await connection.query(sql, userData)
-
-        const resultOfGetUserData = result.rows
-
-        if (resultOfGetUserData.length === 0) {
-            console.log(`User Not Found`)
-            throw { status: 404, message: `User profile not found.` }
-        }
-
-        if (resultOfGetUserData[0].profile_picture) {
-            try{
-                profilePictureUrl = await GetFileUrl(resultOfGetUserData[0].profile_picture, 88000)
-                console.log(profilePictureUrl)
-            }catch{
-                throw { status: 500, message: `Could not retrieve user profile information, please reload the page.` }
-            }
-        }
-
-        const user = result.rows[0]
+        const { user, profilePictureUrl } = await profileService.getUserData(sql, userData)
+         
         const data = {
             user_id: user.user_id,
             username: user.username,
@@ -47,9 +29,7 @@ export const getUserData = async (req, res) => {
             create_at: user.create_at,
         }
 
-
-
-
+    
         res.status(201).json({ status: "OK", data: data });
 
 
@@ -117,7 +97,7 @@ export const updateUserData = async (req, res) => {
 
         if (userData.rows[0].profile_picture !== "image-default-avatar-profile-1.png") {
             //Agregar manejador manejador de errores y registro de errores
-            const resultOfPictureDelete = await DeleteFile(userData.rows[0].profile_picture)
+            await DeleteFile(userData.rows[0].profile_picture)
         }
 
         

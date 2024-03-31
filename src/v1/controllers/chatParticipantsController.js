@@ -1,75 +1,30 @@
 import connection from "../../connectionDb.cjs";
-
+import chatParticipantsService from '../services/chatParticipantsService.js'
 
 export const getContactChatParticipants = async (req, res) => {
 
     const { userId } = req.user
     const { chat_id } = req.query
 
-    
+
     // 1)
     const sqlForGetChatData = 'SELECT * FROM chats WHERE chat_id = $1'
-    
-    
-    
+
+
+
     // 2)
     const sqlForGetChatParticipants = 'SELECT * FROM chat_participants WHERE chat_id = $1'
-    
-    
+
+
     try {
 
-        
+
         // 1)
         /* ******** aqui obtenemos la data del chat **** */
         const chatData = [chat_id]
 
 
-        const resultOfGetChat = await connection.query(sqlForGetChatData, chatData)
-
-
-        const chatDataObtained = resultOfGetChat.rows
-
-
-        // 2)
-        /* ******** aqui obtenemos los ids de los participantes del chat ****** */
-
-
-        const resultOfGetChatParticipants = await connection.query(sqlForGetChatParticipants, chatData)
-
-
-        // aqui obtengo la lista de los ids de los participantes del chat
-        const chatParticipantsDataObtained = resultOfGetChatParticipants.rows
-
-
-        // 3)
-        /* ******** aqui obtenemos la data de los participantes del chat y la mapeamos para el cliente ****** */
-
-
-        const chatParticipantsDataList = await Promise.all(
-            chatParticipantsDataObtained.map(async (participant) => {
-
-                const sql = 'SELECT * FROM users WHERE user_id = $1'
-
-                const participantDataForSql = [participant.user_id]
-
-
-                const participantsData = await connection.query(sql, participantDataForSql)
-
-
-                const participantDataObtained = participantsData.rows[0]
-
-                return {
-                    user_id: participantDataObtained.user_id,
-                    status: participant.status,
-                    username: participantDataObtained.username,
-                    union_date: participant.union_date
-                }
-
-            })
-        )
-
-
-        console.log(chatParticipantsDataList)
+        const {chatDataObtained, chatParticipantsDataList} = await chatParticipantsService.getContactChatParticipants(chatData, sqlForGetChatData, sqlForGetChatParticipants)
 
         const data = {
             chat_data: chatDataObtained,
@@ -105,55 +60,7 @@ export const getGroupChatParticipants = async (req, res) => {
 
         const chatData = [chat_id]
 
-        // 1)
-        /* ******** aqui obtenemos la data del chat **** */
-
-
-        const resultOfGetChat = await connection.query(sqlForGetChatData, chatData)
-
-
-        const chatDataObtained = resultOfGetChat.rows[0]
-
-        // 2)
-        /* ******** aqui obtenemos los ids de los participantes del chat ****** */
-
-
-        const resultOfGetChatParticipants = await connection.query(sqlForGetChatParticipants, chatData)
-
-
-        // aqui obtengo la lista de los ids de los participantes del chat
-        const chatParticipantsDataObtained = resultOfGetChatParticipants.rows
-
-
-        // 3)
-        /* ******** aqui obtenemos la data de los participantes del chat y la mapeamos para el cliente ****** */
-
-
-        const chatParticipantsDataList = await Promise.all(
-            chatParticipantsDataObtained.map(async (participant) => {
-
-                const sql = 'SELECT * FROM users WHERE user_id = $1'
-
-                const participantDataForSql = [participant.user_id]
-
-
-                const participantsData = await connection.query(sql, participantDataForSql)
-
-
-                const participantDataObtained = participantsData.rows[0]
-
-                return {
-                    user_id: participantDataObtained.user_id,
-                    status: participant.status,
-                    username: participantDataObtained.username,
-                    union_date: participant.union_date
-                }
-
-            })
-        )
-
-
-        console.log(chatParticipantsDataList)
+        const {chatDataObtained, chatParticipantsDataList} = await chatParticipantsService.getGroupChatParticipants(chatData, sqlForGetChatData, sqlForGetChatParticipants)
 
         const data = {
             chat_data: chatDataObtained,
@@ -205,47 +112,14 @@ export const updateChatParticipant = async (req, res) => {
 
         const getDataOFParticipant = [statusToFind, participantId]
 
-        const resultOfGetStatus = await connection.query(sqlForGetParticipantStatus, getDataOFParticipant)
-
-        const listOfStatusObtained = resultOfGetStatus.rows
-
-
-        // 2) 
-        // ****** aqui desactivamos el status del usuario del cualquier chat en el que estuviera activo *********** /
-        console.log(`array de todos los status activos${resultOfGetStatus.rows}`)
-        console.log(resultOfGetStatus.rows)
-
-        if (listOfStatusObtained !== undefined && listOfStatusObtained.length > 0) {
-
-
-            const inactiveStatusValue = 'inactive'
-
-            const participantDataForSql = [inactiveStatusValue, listOfStatusObtained[0].user_id, listOfStatusObtained[0].chat_id]
-
-
-            const resultOfDesactiveAllTheStatus = await connection.query(sqlForDesactiveAllParticipantStatus, participantDataForSql)
-
-
-            if (resultOfDesactiveAllTheStatus.rowCount === 0) {
-                console.log('la propiedad rowCount indica que el status del participante del chat no se actualizo con exito')
-                throw { status: 500, message: `An error occurred, try again` }
-            }
-
-        }
-
-
         // 2)
         /* ******** aqui actualizamos el status del participante del chat **** */
 
         const updateStatusData = [newStatus, participantId, chatId]
 
-        const resultOfUpdateStates = await connection.query(sqlForUpdateStatus, updateStatusData)
 
+        await chatParticipantsService.updateChatParticipant(getDataOFParticipant, updateStatusData, sqlForGetParticipantStatus, sqlForDesactiveAllParticipantStatus, sqlForUpdateStatus)
 
-        if (resultOfUpdateStates.rowCount === 0) {
-            console.log('la propiedad rowCount indica que el status del participante del chat no se actualizo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
 
 
         res.status(201).json({ status: "OK" });

@@ -30,7 +30,7 @@ export const GetDataOfToken = (request) => {
             return { userId, tokenrole }
         }
 
-        throw { status: 500, message: 'Autorization required'}
+        throw { status: 500, message: 'Autorization required' }
 
     } catch (err) {
         throw { status: 500, message: err.message || 'Cant verify the token' }
@@ -383,16 +383,22 @@ export const CreateNewNotificationForContact = async (notification) => {
 
     try {
 
+
         // // 1)
         // const sqlForValidateMessageId = 'SELECT * FROM messages WHERE message_id = $1'
 
-
         // 2)
-        const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+        const sqlForThisContactIsDeletedValueOFContactOfUser =
+            "UPDATE contacts SET this_contact_is_deleted = $1 WHERE user_id = $2 AND contact_user_id = $3 AND chat_id = $4"
 
 
         // 3)
+        const sqlForCreateNotification = 'INSERT INTO notifications(notification_id, message_id, user_id, chat_id, type, chat_type, message, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8)'
+
+
+        // 4)
         const sqlForGetUserNotifications = 'SELECT * FROM notifications WHERE user_id = $1 AND chat_type = $2'
+
 
 
         // await new Promise(
@@ -420,7 +426,29 @@ export const CreateNewNotificationForContact = async (notification) => {
         //     throw { status: 500, message: `An error occurred, try again` }
         // }
 
-        // 2)
+        if (notification.wasUserDeletedByHisContact === true) {
+
+            console.log('se ejecuto notification.wasUserDeletedByHisContact')
+            console.log(notification.wasUserDeletedByHisContact)
+            // 2)
+            // ************ ACTUALIZAR VALOR DE this_contact_is_deleted DEL CONTACTO DEL USUARIO NUEVAMENTE A FALSO, PARA QUE CUANDO LE LLEGUE LA NOTIFICACION AL CONTACTO, TAMBIEN APARESCA EL CHAT DE CONTACTO A ESTE *************
+            const newvalueOfThisContactIsDeleted = false 
+
+            const DataForUpdateRegister = [newvalueOfThisContactIsDeleted, notification.participant_id, notification.creator_user_id, notification.chat_id]
+            console.log(DataForUpdateRegister)
+
+            const resultOfUpdateThisContactIsDeletedValue = await connection.query(sqlForThisContactIsDeletedValueOFContactOfUser, DataForUpdateRegister)
+
+
+            if (resultOfUpdateThisContactIsDeletedValue.rowCount === 0) {
+                console.log('la propiedad rowCount indica que el valor de this_contact_is_deleted no se actualizo con exito')
+                throw { status: 500, message: `An error occurred, try again` }
+            }
+
+        }
+
+
+        // 3)
         // ************ Creacion de chat *************
         const notification_id = uuidv4()
 
@@ -434,7 +462,7 @@ export const CreateNewNotificationForContact = async (notification) => {
             throw { status: 500, message: `An error occurred, try again` }
         }
 
-        // 3)
+        // 4)
         // ************ Obtener todas las notificaciones del usurario *************
 
         const dataForGetNotifications = [notification.participant_id, notification.chat_type]

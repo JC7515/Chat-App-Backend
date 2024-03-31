@@ -1,4 +1,5 @@
 import connection from "../../connectionDb.cjs";
+import loginService from "../services/loginService.js";
 import { ComparatePassword, GenerateAccessToken, GenerateRefreshToken } from "../utils/index.js";
 
 
@@ -17,33 +18,13 @@ export const generateAccessToken = async (req, res) => {
             throw { status: 400, message: `Please complete all required fields.` }
         }
 
-        const result = await connection.query(sql, emailToSearch)
+        
+        const result = await loginService.generateAccessToken(sql, emailToSearch, password)
 
-
-        if (result.rows.length === 0) {
-            console.log(`User Not Found`)
-            throw { status: 400, message: `Please enter a valid email.` }
-        }
-
-
-        // IMPORTANTE: ya no se hace un bucle, porque previamente se hizo una validacion usersRouters para validad que el email de cada usuario sea unico en la db, por lo que aca la consulta nos estaria devolviendo un solo usuario, ya no un grupo 
-
-        const userData = result.rows[0]
-
-        const isTheCorrectPassword = await ComparatePassword(password, userData.password)
-
-        // console.log(isTheCorrectPassword)
-
-        if (!isTheCorrectPassword) throw { status: 401, message: 'Incorrect email or password. Please try again.' }
-
-
-        const generateAccessToken = GenerateAccessToken(userData.user_id)
-
-        const generateRefreshToken = GenerateRefreshToken(userData.user_id)
 
         const data = {
-            access_token: generateAccessToken,
-            refresh_token: generateRefreshToken,
+            access_token: result.generateAccessToken,
+            refresh_token: result.generateRefreshToken,
         }
 
 

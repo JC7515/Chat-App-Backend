@@ -2,7 +2,7 @@ import connection from "../../connectionDb.cjs";
 import { GetCurrentDateString, GetTwoGroupInicials } from "../helpers/index.js";
 import { HashPassword } from "../utils/index.js";
 import { v4 as uuidv4 } from 'uuid'
-
+import groupsService from '../services/groupsService.js'
 
 
 
@@ -10,44 +10,16 @@ export const getGroups = async (req, res) => {
 
     const { userId } = req.user
 
+    // 1) 
+    const sql = 'SELECT * FROM group_members WHERE user_id = $1'
 
     try {
 
-        const sql = 'SELECT * FROM group_members WHERE user_id = $1'
+
+        // 1) 
         const userData = [userId]
 
-
-        const resultOfGetUserGroups = await connection.query(sql, userData)
-
-
-        const groupsList = resultOfGetUserGroups.rows
-
-
-        // aqui mapeamos los datos para devolver un array de objetos con la misma estructura de un objeto group_members, pero cambiando la propiedad user_id por user y otorgandole los datos del usuario obtenido a la propiedad user   
-
-
-
-        const groupsListOfUser = await Promise.all(
-            groupsList.map(async (group, index) => {
-
-                const sql = 'SELECT * FROM groups WHERE group_id = $1'
-
-                const groupDataForSql = [group.group_id]
-
-
-                const resultOfGetGroupData = await connection.query(sql, groupDataForSql)
-
-                const groupDataObtained = resultOfGetGroupData.rows[0]
-
-                return {
-                    group: groupDataObtained,
-                    user_id: group.user_id,
-                    role: group.role,
-                }
-
-            })
-
-        )
+        const groupsListOfUser = await groupsService.getGroups(userData, sql)
 
         const data = {
             groups_list: groupsListOfUser
@@ -69,7 +41,6 @@ export const getGroups = async (req, res) => {
 export const saveGroups = async (req, res) => {
 
     const { name, description, admin_id, group_password } = req.body
-
 
 
     // 1)
@@ -107,14 +78,6 @@ export const saveGroups = async (req, res) => {
 
         const chatDataForRegister = [chat_id, name, chat_type, creationDate]
 
-        const resultChatCreation = await connection.query(sqlForCreateChat, chatDataForRegister)
-
-
-        if (resultChatCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que el chat no se creo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
 
         // 2)
         // ************ Creacion de grupo *************   
@@ -129,29 +92,14 @@ export const saveGroups = async (req, res) => {
         const groupDataForRegister = [group_id, chat_id, name, description, '', groupInicials, invitationId, groupPasswordEncrypted]
 
 
-        const resultgroupCreation = await connection.query(sqlForCreateGroup, groupDataForRegister)
-
-
-        if (resultgroupCreation.rowCount === 0) {
-            console.log('la propiedad rowCount indica que el grupo no se creo con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
         // 3)
         // ******* Declarar Participantes del chat **********
 
         const status = 'inactive'
         const union_date = GetCurrentDateString()
-    
+
         const DataForChatParticipants = [chat_id, admin_id, status, union_date]
 
-        const resultDeclaredChatParticipants = await connection.query(sqlForCreateChatParticipants, DataForChatParticipants)
-
-
-        if (resultDeclaredChatParticipants.rowCount === 0) {
-            console.log('la propiedad rowCount indica que no se declaro al usuario como administrador con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
 
         // 4)
         // ******** Declarar admin del grupo ***********
@@ -160,14 +108,10 @@ export const saveGroups = async (req, res) => {
 
         const adminDataForChatRegister = [group_id, admin_id, roleOFAdmin]
 
-        const resultDeclaredAdmin = await connection.query(sqlForDeclareGroupAdmin, adminDataForChatRegister)
+    
+        await groupsService.saveGroups(chatDataForRegister, sqlForCreateChat, groupDataForRegister, sqlForCreateGroup, sqlForCreateChatParticipants, DataForChatParticipants, sqlForDeclareGroupAdmin, adminDataForChatRegister)
 
-
-        if (resultDeclaredAdmin.rowCount === 0) {
-            console.log('la propiedad rowCount indica que no se declaro al usuario como administrador con exito')
-            throw { status: 500, message: `An error occurred, try again` }
-        }
-
+         
 
         const data = {
             invitation_id: invitationId
@@ -188,13 +132,13 @@ export const saveGroups = async (req, res) => {
 
 export const deleteGroups = async (req, res) => {
 
-    const { chatId , groupId } = req.query
+    const { chatId, groupId } = req.query
 
     // console.log(invitation_id)
 
     // 1)
     const sqlForDeleteGroup = 'DELETE FROM groups WHERE group_id = $1'
-    
+
     // 2)
     const sqlForDeleteGroupMessages = 'DELETE FROM messages WHERE chat_id = $1'
 
@@ -221,7 +165,7 @@ export const deleteGroups = async (req, res) => {
         }
 
 
-        
+
         // 2)*******************************************
         // *********** Aqui eliminamos todos los mensajes del grupo ************
 

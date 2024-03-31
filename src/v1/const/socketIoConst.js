@@ -2,6 +2,7 @@
 export const IS_CONTACT_IN_THE_RECENT_MESSAGES_AREA_EVENT = 'isThe ContactInTheRecentMessagesArea' 
 export const UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT = 'unlockExecutedByUserToContact' 
 export const BLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT = 'blockExecutedByUserToContact' 
+export const DELETION_EXECUTED_BY_USER_TO_CONTACT_EVENT = 'deletionExecutedByUserToContact' 
 export const USER_IS_ONLINE_EVENT = 'userIsOnline'
 export const GROUP_MESSAGE_EVENT = 'groupMessage'
 export const CONTACT_MESSAGE_EVENT = 'contactMessage'

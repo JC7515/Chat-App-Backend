@@ -1,6 +1,7 @@
 import connection from "../../connectionDb.cjs";
 import { SendEmailValidation } from "../../resend.js";
 import { GenerateTokenToValidateUserMail } from "../utils/index.js";
+import emailsService from '../services/emailsService.js'
 
 
 
@@ -22,29 +23,16 @@ export const verifyEmail = async (req, res) => {
         // ************Aqui validamos si el id del token le pertenece a algun usuario en la base de datos ************
         const userData = [userId]
 
-        const result = await connection.query(sqlForValidateUser, userData)
-
-        const resultOfGetUserData = result.rows
-
-        if (resultOfGetUserData.length === 0) {
-            console.log(`User Not Found`)
-            throw { status: 404, message: `User profile not found.` }
-        }
-
-        const user = result.rows[0]
 
         // 2)
         // **********Aqui actualizamos el  el estado del campo is_validate del registro de usuario ***********
         const newStatusOfEmail = 'true'
         const dataForUptade = [newStatusOfEmail, userId]
 
-        const resultOfUpdate = await connection.query(sqlForUpdateEmailStatus, dataForUptade)
 
 
-        if (resultOfUpdate.rowCount === 0) {
-            console.log(`No se realizo la actualizacion con exito`)
-            throw { status: 404, message: `an error occurred, try again.` }
-        }
+        const user = await emailsService.verifyEmail(userData, dataForUptade, sqlForValidateUser, sqlForUpdateEmailStatus)
+
 
         const data = {
             email: user.email
@@ -77,33 +65,15 @@ export const sendVerificationEmailByResend = async (req, res) => {
         // ************Aqui validamos si el email que envio el usario pertenece a algun usuario en la base de datos ************
         const userData = [email]
 
-        const result = await connection.query(sqlForValidateUser, userData)
 
-        const resultOfGetUserData = result.rows
-
-        if (resultOfGetUserData.length === 0) {
-            console.log(`User Not Found`)
-            throw { status: 404, message: `Email not registered. Verify the address or register to create an account.` }
-        }
-
-        const user = result.rows[0]
-
-        // 2)
-        // **********Aqui reenviamos la validacion de correo al correo que proporciono el usuario  ***********
-        const tokenForValidateEmail = GenerateTokenToValidateUserMail(user.user_id)
-
-        console.log(tokenForValidateEmail)
-
-        const validationUrl = `http://localhost:3000/emailVerification/${tokenForValidateEmail}`
-
-        // const sendEmailValidation = await SendEmailValidation(email, validationUrl)
-
-        await SendEmailValidation(email, validationUrl)
+     
+        await emailsService.verifyEmail(userData, sqlForValidateUser, email)
+        
 
         const data = {
-            message: 'Email verification was forwarded, check your inbox' 
+            message: 'Email verification was forwarded, check your inbox'
         }
-        res.status(201).json({ status: "OK", data});
+        res.status(201).json({ status: "OK", data });
 
 
     } catch (error) {
