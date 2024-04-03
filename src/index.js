@@ -38,12 +38,12 @@ app.use(express.json({
 }))
 
 
-app.use(cors({
-    origin: 'http://localhost:3000',
-    // origin: '*',
-    methods: 'GET,PUT,POST,DELETE', 
-    allowedHeaders: 'Content-Type, Authorization'
-}))
+// app.use(cors({
+//     origin: 'http://localhost:3000',
+//     // origin: '*',
+//     methods: 'GET,PUT,POST,DELETE', 
+//     allowedHeaders: 'Content-Type, Authorization'
+// }))
 
 
 app.use(fileUpload({useTempFiles: true, tempFileDir: './uploads'}))

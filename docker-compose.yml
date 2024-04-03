@@ -2,10 +2,10 @@ version: '2'
 
 services:
 
-   backend-1: 
-    container_name: backend-1
+   backend-chatify-1: 
+    container_name: backend-chatify-1
     # build: .  no utilizo build porque creara 3 versiones de mi imagen dockerfile iguales solo que con diferente nombre 
-    image: moviezone-app:1.0
+    image: chatify-app:1.0
     # ports: 
     #  - 4600:4400
     # environment: 
@@ -16,7 +16,7 @@ services:
     #     DATABASE_URL: ${DATABASE_URL}
     # volumes:
     #   - ./src/host:/etc/host
-    command: 'npm run dev-start'
+    command: 'npm run dev'
     # depends_on:
       # - db
       # - redis-master
@@ -29,10 +29,10 @@ services:
     networks:
       - general-network 
 
-   backend-2: 
-    container_name: backend-2
+   backend-chatify-2: 
+    container_name: backend-chatify-2
     # build: .
-    image: moviezone-app:1.0
+    image: chatify-app:1.0
     # ports: 
     #  - 4700:4400
     # environment: 
@@ -43,7 +43,7 @@ services:
     #     DATABASE_URL: ${DATABASE_URL}
     # volumes:
     #   - ./src/host:/etc/host
-    command: 'npm run dev-start'
+    command: 'npm run dev'
     # depends_on:
       # - db
       # - redis-master
@@ -57,28 +57,21 @@ services:
     - general-network
 
    nginx:
-    container_name: server-nginx
+    container_name: server-chatify-nginx
     image: nginx
     ports: 
-     - 4100:443
+     - 4800:443
+    #  - 4800:80
     volumes:
      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
      - ./nginx/snippets/cors_config.conf:/etc/nginx/snippets/cors_config.conf
      - ./nginx/snippets/cors-sites.conf:/etc/nginx/snippets/cors-sites.conf
      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-     - /etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/fullchain.pem:/etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/fullchain.pem
-     - /etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/privkey.pem:/etc/letsencrypt/live/www.moviezone.juanprodprojects.pro/privkey.pem
+     - /etc/letsencrypt/live/www.chatify.juanprodprojects.pro/fullchain.pem:/etc/letsencrypt/live/www.chatify.juanprodprojects.pro/fullchain.pem
+     - /etc/letsencrypt/live/www.chatify.juanprodprojects.pro/privkey.pem:/etc/letsencrypt/live/www.chatify.juanprodprojects.pro/privkey.pem
     depends_on:
-     - backend-1
-     - backend-2
-     # - backend3
-     # - backend4
-     # - backend5
-     # - backend6
-     # - backend7
-     # - backend8
-     # - backend9
-     # - backend10
+     - backend-chatify-1
+     - backend-chatify-2
     networks:
      - general-network
 

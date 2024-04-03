@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+statusinfo.txt
+README.md
+errorLogTypes.txt
+.env.development
+nginx
+.gitignore
+test

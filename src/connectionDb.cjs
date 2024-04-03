@@ -1,5 +1,5 @@
 const dbConfig = require('./configDb.cjs')
-const { Pool, Client } = require( 'pg')
+const { Pool, Client } = require('pg')
 
 // creamos un nuevo cliente o Pool que nos permita establecer connexion con nuestra base de datos
 const connection = new Pool(dbConfig)

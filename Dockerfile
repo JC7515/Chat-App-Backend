@@ -38,7 +38,7 @@ COPY . .
 # EXPOSE 4500
 
 #EL comando CMD nos servira para poder ejecutar comandos dentro del contenedor de docker, y en este caso iniciar nuestro
-#servidor, tenindo que poner dentro de una lista como se ve abajo primero el comando a ejecutar y luego sus parametros.
+#servidor, ten0indo que poner dentro de una lista como se ve abajo primero el comando a ejecutar y luego sus parametros.
 
 # CMD ["npm", "start"]
 # CMD sh -c 'echo "172.26.0.2 dbapp" >> /etc/hosts && npm start'
