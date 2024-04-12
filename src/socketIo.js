@@ -12,7 +12,7 @@ export const server = http.createServer(app)
 
 const optionsIo = {
     cors: {
-        origin: FRONTEND_URL
+        origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003", "https://www.chatify.juanprodprojects.pro:3003/socket.io", "http://localhost:3003/socket.io"]
     }
 }
 

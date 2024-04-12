@@ -60,8 +60,8 @@ services:
     container_name: socket-server-chatify
     # build: .
     image: socket-chatify-app:1.0
-    ports: 
-     - 4900:4900
+    # ports: 
+    #  - 4900:4900
     # environment: 
     #     SEQ_DB: postgres
     #     SEQ_USER: postgres

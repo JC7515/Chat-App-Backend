@@ -39,7 +39,7 @@ app.use(express.json({
 
 
 // app.use(cors({
-//     origin: 'http://localhost:3003',
+//     origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003"],
 //     // origin: '*',
 //     methods: 'GET,PUT,POST,DELETE', 
 //     allowedHeaders: 'Content-Type, Authorization'
