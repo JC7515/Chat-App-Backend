@@ -56,6 +56,33 @@ services:
     networks:
     - general-network
 
+   socket-server-chatify: 
+    container_name: socket-server-chatify
+    # build: .
+    image: socket-chatify-app:1.0
+    ports: 
+     - 4900:4900
+    # environment: 
+    #     SEQ_DB: postgres
+    #     SEQ_USER: postgres
+    #     SEQ_PW: root123
+    #     PORT: 5200
+    #     DATABASE_URL: ${DATABASE_URL}
+    # volumes:
+    #   - ./src/host:/etc/host
+    command: 'npm run dev'
+    # depends_on:
+      # - db
+      # - redis-master
+      # - redis-slave
+      # - redis
+      # - redis-master-1
+      # - redis-master-2
+      # - redis-master-3
+      # - redis-master-4
+    networks:
+    - general-network
+
    nginx:
     container_name: server-chatify-nginx
     image: nginx
@@ -72,6 +99,7 @@ services:
     depends_on:
      - backend-chatify-1
      - backend-chatify-2
+     - socket-server-chatify
     networks:
      - general-network
 
@@ -237,4 +265,4 @@ services:
 networks:
   general-network:
     external: true
-    driver: bridge
+    # driver: bridge
