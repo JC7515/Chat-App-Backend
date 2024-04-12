@@ -15,3 +15,5 @@ export const REDIS_PORT = process.env.REDIS_PORT
 export const SERVER_PORT = process.env.SERVER_PORT
 export const SECRET_KEY_JWT = process.env.SECRET_KEY_JWT
 export const RESEND_KEY = process.env.RESEND_KEY
+export const FRONTEND_URL = process.env.FRONTEND_URL
+
