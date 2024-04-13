@@ -1,7 +1,7 @@
 import { app } from './socketIo.js';
 import express from 'express';
 import { server } from './socketIo.js';
-import { SERVER_PORT } from './configEnv.js'
+import { FRONTEND_URL, SERVER_PORT } from './configEnv.js'
 import fileUpload from 'express-fileupload'
 import compression from 'compression'
 import cors from 'cors'
@@ -38,12 +38,12 @@ app.use(express.json({
 }))
 
 
-// app.use(cors({
-//     origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003"],
-//     // origin: '*',
-//     methods: 'GET,PUT,POST,DELETE', 
-//     allowedHeaders: 'Content-Type, Authorization'
-// }))
+app.use(cors({
+    origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003"],
+    // origin: '*',
+    methods: 'GET,PUT,POST,DELETE', 
+    allowedHeaders: 'Content-Type, Authorization'
+}))
 
 
 app.use(fileUpload({useTempFiles: true, tempFileDir: './uploads'}))

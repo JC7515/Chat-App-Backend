@@ -4,7 +4,7 @@ import http from 'http'
 import { AUTH_EVENT, A_ADMIN_HAS_DELETED_YOU_CHAT_EVENT, A_PARTICIPANT_CHANGED_TO_ROLE_EVENT, A_PARTICIPANT_DELETED_BY_ADMIN_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_CONTACT_CHAT_EVENT, A_PARTICIPANT_JOINED_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_LEFT_THE_GROUP_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_CONTACT_CHAT_EVENT, A_PARTICIPANT_UNJOINED_TO_GROUP_CHAT_EVENT, BLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT, CONTACT_MESSAGE_EVENT, CONTACT_NOTIFICATION_MESSAGE_EVENT, DELETION_EXECUTED_BY_USER_TO_CONTACT_EVENT, GET_USER_SOCKET_ID_EVENT, GROUP_MESSAGE_EVENT, GROUP_NOTIFICATION_MESSAGE_EVENT, IS_CONTACT_IN_THE_RECENT_MESSAGES_AREA_EVENT, NEW_GROUP_MEMBER_EVENT, NOTIFICATION_MESSAGE_EVENT, UNLOCK_EXECUTED_BY_USER_TO_CONTACT_EVENT,  USER_IS_ONLINE_EVENT, } from './v1/const/socketIoConst.js'
 import { CreateANewMessage, GetDataOfToken, UpdateUserSocketId, CreateNewNotificationForContact, CreateNewNotificationForGroup, UpdateSocketIdOfUser, UpdateChatParticipantStatus, GetContactListOfUser } from './v1/utils/index.js';
 import { ConvertDateToDayFormat, ConvertDateToHourFormat } from './v1/helpers/index.js';
-import { FRONTEND_URL } from './configEnv.js';
+import { FRONTEND_URL, PATH_SOCKET_IO } from './configEnv.js';
 export const app = express()
 
 export const server = http.createServer(app)
@@ -12,8 +12,9 @@ export const server = http.createServer(app)
 
 const optionsIo = {
     cors: {
-        origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003", "https://www.chatify.juanprodprojects.pro:3003/socket.io", "http://localhost:3003/socket.io"]
-    }
+        origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003"]
+    },
+    path: PATH_SOCKET_IO
 }
 
 
