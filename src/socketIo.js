@@ -5,6 +5,7 @@ import { AUTH_EVENT, A_ADMIN_HAS_DELETED_YOU_CHAT_EVENT, A_PARTICIPANT_CHANGED_T
 import { CreateANewMessage, GetDataOfToken, UpdateUserSocketId, CreateNewNotificationForContact, CreateNewNotificationForGroup, UpdateSocketIdOfUser, UpdateChatParticipantStatus, GetContactListOfUser } from './v1/utils/index.js';
 import { ConvertDateToDayFormat, ConvertDateToHourFormat } from './v1/helpers/index.js';
 import { FRONTEND_URL, PATH_SOCKET_IO } from './configEnv.js';
+import path from 'path';
 export const app = express()
 
 export const server = http.createServer(app)
@@ -12,9 +13,9 @@ export const server = http.createServer(app)
 
 const optionsIo = {
     cors: {
-        origin: [FRONTEND_URL, "https://www.chatify.juanprodprojects.pro:3003", "https://www.chatify.juanprodprojects.pro"]
-    },
-    path: PATH_SOCKET_IO
+        origin: FRONTEND_URL,
+        // path: PATH_SOCKET_IO
+    }
 }
 
 

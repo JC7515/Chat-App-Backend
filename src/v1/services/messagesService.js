@@ -28,9 +28,9 @@ const getContactMessages = async (sqlForGetChatParticipants, DataForGetChatParti
         const { messagesList, blocksArray, blocksOfThisUser
             , blocksOfTheOtherParticipant } = await messages.getContactMessages(sqlForGetChatParticipants, DataForGetChatParticipants, chatId, messagesLimit, creationDate, userId)
 
-        console.log('messagesList')
-        console.log(messagesList)
-        console.log(messagesList.length)
+        // console.log('messagesList')
+        // console.log(messagesList)
+        // console.log(messagesList.length)
 
         // 1)
         // ************* aqui filtramos todos los mensajes que esten fuera de las fechas en la que el usuario hizo un bloqueo **************/
@@ -299,8 +299,8 @@ const getContactMessages = async (sqlForGetChatParticipants, DataForGetChatParti
                 return acumulador.concat(array)
             })
 
-            console.log('messageListObtained')
-            console.log(messageListObtained)
+            // console.log('messageListObtained')
+            // console.log(messageListObtained)
 
 
             messageListWithUserData = await Promise.all(

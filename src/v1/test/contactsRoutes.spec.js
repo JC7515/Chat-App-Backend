@@ -35,8 +35,8 @@ beforeAll(async () => {
 
     userData = response.body.data
 
-    console.log(response.body.data)
-    console.log(userData)
+    // console.log(response.body.data)
+    // console.log(userData)
 
     expect(response.statusCode).toBe(201)
 
@@ -59,8 +59,8 @@ describe('GET /v1/contacts', () => {
 
         const contactUserIdTest = "e9186e6f-88a7-490d-ac0d-b49f6ab7c15d"
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {
@@ -86,8 +86,8 @@ describe('GET /v1/contacts/list', () => {
 
         const contactUserIdTest = "e9186e6f-88a7-490d-ac0d-b49f6ab7c15d"
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {
@@ -114,8 +114,8 @@ describe('GET /v1/contacts/list', () => {
 
         const contactUserIdTest = "e9186e6f-88a7-490d-ac0d-b49f6ab7c15d"
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {

@@ -15,12 +15,12 @@ export const verifyEmailToken = (req, res, next) => {
             throw { status: 401, message: `No email token provided` }
         }
 
-        console.log(authorization)
+        // console.log(authorization)
 
         const { userId, tokenrole } = GetDataOfToken(authorization)
          
 
-        console.log(userId)        
+        // console.log(userId)        
 
         if (!userId) {
             console.log(`Could not retrieve token id`)
@@ -31,7 +31,7 @@ export const verifyEmailToken = (req, res, next) => {
         if(tokenrole !== EMAIL_VALIDATION_TOKEN) throw { status: 401, message: `The token email validation has been revoked or is invalid. Please log in again.`}
 
 
-        console.log(userId, tokenrole)
+        // console.log(userId, tokenrole)
 
         req.user = { userId, tokenrole }
 

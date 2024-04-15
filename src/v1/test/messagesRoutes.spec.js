@@ -55,8 +55,8 @@ describe('GET /v1/group/messages', () => {
         const messagesLimit = 20
         const creationDate = GetCurrentDateString()
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {
@@ -84,8 +84,8 @@ describe('GET /v1/contact/messages', () => {
         const messagesLimit = 20
         const creationDate = GetCurrentDateString()
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {

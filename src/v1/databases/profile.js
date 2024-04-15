@@ -33,7 +33,7 @@ const updateUserData = async (sqlForSelectPerfil, dataForSelectPerfil, dinamicSq
 
         const userData = await connection.query(sqlForSelectPerfil, dataForSelectPerfil)
 
-        console.log(userData.rows)
+        // console.log(userData.rows)
 
         if (userData.rows[0].profile_picture !== "image-default-avatar-profile-1.png") {
             //Agregar manejador manejador de errores y registro de errores
@@ -46,8 +46,8 @@ const updateUserData = async (sqlForSelectPerfil, dataForSelectPerfil, dinamicSq
 
         const resultOfUpdateUserData = await connection.query(dinamicSqlForUpdateUserData, dataForUpdateUserInfo)
 
-        console.log(dinamicSqlForUpdateUserData)
-        console.log(dataForUpdateUserInfo)
+        // console.log(dinamicSqlForUpdateUserData)
+        // console.log(dataForUpdateUserInfo)
 
         if (resultOfUpdateUserData.rowCount === 0) {
             console.log('la propiedad rowCount indica que no hay registros actualizados con exito')

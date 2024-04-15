@@ -359,7 +359,7 @@ export const CreateNewNotificationForGroup = async (notification) => {
 
         const userNotificationsObtained = resultOfGetUserNotifications.rows
 
-        console.log(userNotificationsObtained)
+        // console.log(userNotificationsObtained)
 
         const data = {
             user_notifications: userNotificationsObtained
@@ -428,14 +428,14 @@ export const CreateNewNotificationForContact = async (notification) => {
 
         if (notification.wasUserDeletedByHisContact === true) {
 
-            console.log('se ejecuto notification.wasUserDeletedByHisContact')
-            console.log(notification.wasUserDeletedByHisContact)
+            // console.log('se ejecuto notification.wasUserDeletedByHisContact')
+            // console.log(notification.wasUserDeletedByHisContact)
             // 2)
             // ************ ACTUALIZAR VALOR DE this_contact_is_deleted DEL CONTACTO DEL USUARIO NUEVAMENTE A FALSO, PARA QUE CUANDO LE LLEGUE LA NOTIFICACION AL CONTACTO, TAMBIEN APARESCA EL CHAT DE CONTACTO A ESTE *************
             const newvalueOfThisContactIsDeleted = false 
 
             const DataForUpdateRegister = [newvalueOfThisContactIsDeleted, notification.participant_id, notification.creator_user_id, notification.chat_id]
-            console.log(DataForUpdateRegister)
+            // console.log(DataForUpdateRegister)
 
             const resultOfUpdateThisContactIsDeletedValue = await connection.query(sqlForThisContactIsDeletedValueOFContactOfUser, DataForUpdateRegister)
 
@@ -472,7 +472,7 @@ export const CreateNewNotificationForContact = async (notification) => {
 
         const userNotificationsObtained = resultOfGetUserNotifications.rows
 
-        console.log(userNotificationsObtained)
+        // console.log(userNotificationsObtained)
 
         const data = {
             user_notifications: userNotificationsObtained
@@ -522,7 +522,7 @@ export const UpdateSocketIdOfUser = async (newSocketId, lastSocketId) => {
         const userDataObtained = resultsOfGetUserData.rows[0]
 
 
-        console.log(userDataObtained)
+        // console.log(userDataObtained)
 
 
         if (userDataObtained.length === 0) {
@@ -608,7 +608,7 @@ export const UpdateChatParticipantStatus = async (socketId) => {
         const userDataObtained = resultsOfGetUserData.rows[0]
 
 
-        console.log(userDataObtained)
+        // console.log(userDataObtained)
 
 
         if (resultsOfGetUserData.rows.length === 0) {
@@ -630,7 +630,7 @@ export const UpdateChatParticipantStatus = async (socketId) => {
 
         const chatIdObtained = resultsOfGetChatId.rows[0]
 
-        console.log(chatIdObtained)
+        // console.log(chatIdObtained)
 
         // if (resultsOfGetChatId.rows.length === 0) {
         //     console.log('la propiedad length indica que no ah obtenido ningun chatId con exito ')
@@ -718,7 +718,7 @@ export const UpdateChatParticipantStatus = async (socketId) => {
         }
 
 
-        console.log(contactList)
+        // console.log(contactList)
         const chatIdValue = !chatIdObtained ? 'empty' : chatIdObtained.chat_id
 
 
@@ -817,7 +817,7 @@ export const GetContactListOfUser = async (userId) => {
         }
 
 
-        console.log(contactList)
+        // console.log(contactList)
 
         const data = {
             contactList: contactList

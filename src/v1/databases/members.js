@@ -44,7 +44,7 @@ const getMembers = async (sql, groupData) => {
                     profile_picture: profilePictureUrl
                 }
 
-                console.log(userDataModified)
+                // console.log(userDataModified)
 
                 if (member.role === 'admin') {
 
@@ -128,7 +128,7 @@ const getValidatedMembers = async (sql, groupData) => {
                         profile_picture: profilePictureUrl
                     }
 
-                    console.log(userDataModified)
+                    // console.log(userDataModified)
 
                     if (member.role === 'admin') {
 

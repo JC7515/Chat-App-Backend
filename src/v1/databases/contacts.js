@@ -186,7 +186,7 @@ const getContactList = async (sql, userData, userId) => {
         const contactsList = resultOfGetUserContacts.rows.filter((contact) => contact.this_contact_is_deleted === false)
 
 
-        console.log(contactsList)
+        // console.log(contactsList)
 
         // aqui mapeamos los datos para devolver un objeto con la misma estructura de un objeto contacts, pero cambiando la propiedad contact_user_id por user y otorgandole los datos del usuario obtenido a la propiedad user   
 
@@ -271,7 +271,7 @@ const getContactList = async (sql, userData, userId) => {
                     if (resultOfGetContactData.profile_picture) {
 
                         profilePictureUrl = await GetFileUrl(resultOfGetContactData.profile_picture, 88000)
-                        console.log(profilePictureUrl)
+                        // console.log(profilePictureUrl)
 
                     }
 
@@ -482,7 +482,7 @@ const saveContact = async (sqlForGetExistingContact, dataForSearchContact, sqlFo
             DataForRegisterContacts.forEach(async (dataForCreateContact, index) => {
 
                 const dataForQuery = DataForRegisterContacts[index]
-                console.log(dataForQuery)
+                // console.log(dataForQuery)
 
                 const resultOfContactsCreation = await connection.query(sqlForResgisterNewContact, dataForQuery)
 
@@ -534,8 +534,8 @@ const deleteContact = async (sqlForValidateAllContacts, dataToObtainAllContactIn
 
         const resultOfGetAllContactsData = await connection.query(sqlForValidateAllContacts, dataToObtainAllContactInformation)
 
-        console.log('resultOfGetAllChatParticipants')
-        console.log(resultOfGetAllContactsData.rows)
+        // console.log('resultOfGetAllChatParticipants')
+        // console.log(resultOfGetAllContactsData.rows)
 
         // aqui estamos extrayendo solo los objetos que tenga la propiedad this_contact_is_deleted en false, para ejecutar una de la dos condicionales que estan mas abajo
         const numberOfContactsNotDeletedInChat = resultOfGetAllContactsData.rows.filter((contact) => contact.this_contact_is_deleted === false)

@@ -53,8 +53,8 @@ describe('GET /v1/groups', () => {
     it('Should get only one contact selected', async () => {
 
 
-        console.log(userData)
-        console.log(authToken)
+        // console.log(userData)
+        // console.log(authToken)
 
         const authorization = {
             headers: {

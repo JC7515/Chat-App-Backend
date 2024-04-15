@@ -14,7 +14,7 @@ const getUserData = async (sql, userData) => {
         if (resultOfGetUserData[0].profile_picture) {
             try {
                 profilePictureUrl = await GetFileUrl(resultOfGetUserData[0].profile_picture, 88000)
-                console.log(profilePictureUrl)
+                // console.log(profilePictureUrl)
             } catch {
                 throw { status: 500, message: `Could not retrieve user profile information, please reload the page.` }
             }

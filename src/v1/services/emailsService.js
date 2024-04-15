@@ -33,7 +33,7 @@ const sendVerificationEmailByResend = async (userData, sqlForValidateUser, email
         // **********Aqui reenviamos la validacion de correo al correo que proporciono el usuario  ***********
         const tokenForValidateEmail = GenerateTokenToValidateUserMail(user.user_id)
 
-        console.log(tokenForValidateEmail)
+        // console.log(tokenForValidateEmail)
 
         const validationUrl = `http://localhost:3000/emailVerification/${tokenForValidateEmail}`
 

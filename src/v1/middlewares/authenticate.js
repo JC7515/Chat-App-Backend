@@ -27,12 +27,12 @@ export const authenticate = (req, res, next) => {
             throw { status: 401, message: `No access token provided` }
         }
 
-        console.log(authorization)
+        // console.log(authorization)
 
         const { userId, tokenrole } = GetDataOfToken(authorization)
 
 
-        console.log(userId)        
+        // console.log(userId)        
 
         if (!userId) {
             console.log(`Could not retrieve token id`)
@@ -43,7 +43,7 @@ export const authenticate = (req, res, next) => {
         if(tokenrole !== ACCESS_TOKEN_NAME) throw { status: 401, message: `The refresh token has been revoked or is invalid. Please log in again.`}
 
 
-        console.log(userId, tokenrole)
+        // console.log(userId, tokenrole)
 
         req.user = { userId, tokenrole }
 

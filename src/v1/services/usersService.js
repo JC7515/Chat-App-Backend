@@ -21,7 +21,7 @@ const getUserToSearch = async (sql, dataForQuery) => {
 
                         if (user.profile_picture) {
                             profilePictureUrl = await GetFileUrl(user.profile_picture, 88000)
-                            console.log(profilePictureUrl)
+                            // console.log(profilePictureUrl)
 
                             return {
                                 ...user,

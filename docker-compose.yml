@@ -60,8 +60,8 @@ services:
     container_name: socket-server-chatify
     # build: .
     image: socket-chatify-app:1.0
-    # ports: 
-    #  - 4900:4900
+    ports: 
+     - 4900:4900
     # environment: 
     #     SEQ_DB: postgres
     #     SEQ_USER: postgres
@@ -87,8 +87,8 @@ services:
     container_name: server-chatify-nginx
     image: nginx
     ports: 
-     - 4800:443
-    #  - 4800:80
+    #  - 4800:443
+     - 4800:80
     volumes:
      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
      - ./nginx/snippets/cors_config.conf:/etc/nginx/snippets/cors_config.conf
@@ -196,8 +196,8 @@ services:
   #      POSTGRES_PASSWORD: admin1234
   #    volumes:
   #     - ./src/init.sql:/docker-entrypoint-initdb.d/init.sql
-  #     - ./databaseBackups/backup_entertainmentappdb_4:/databaseBackups/backup_entertainmentappdb_4
-  #   #  command: 'pg_restore -U postgres  -d  entertainmentappdb ./databaseBackups/backup_entertainmentappdb_1'
+  #     - ./databaseBackups/backup_chatifydb_1.backup:/databaseBackups/backup_chatifydb_1.backup
+    #  command: 'pg_restore -U postgres  -d  entertainmentappdb ./databaseBackups/backup_entertainmentappdb_1'
 
   #  redis:
   #    container_name: 'redis'
