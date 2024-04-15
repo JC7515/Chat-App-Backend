@@ -87,8 +87,8 @@ services:
     container_name: server-chatify-nginx
     image: nginx
     ports: 
-    #  - 4800:443
-     - 4800:80
+     - 4800:443
+    #  - 4800:80
     volumes:
      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
      - ./nginx/snippets/cors_config.conf:/etc/nginx/snippets/cors_config.conf
